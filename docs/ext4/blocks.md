@@ -1,0 +1,61 @@
+# 2.1. Blocks — The Linux Kernel  documentation
+
+[![Logo](https://docs.kernel.org/_static/logo.svg)](https://docs.kernel.org/index.md)
+
+# [The Linux Kernel](https://docs.kernel.org/index.md)
+
+7.1.0-rc4
+
+
+
+# 2.1. Blocks[¶](blocks.md#blocks "Permalink to this heading")
+
+ext4 allocates storage space in units of “blocks”. A block is a group of
+sectors between 1KiB and 64KiB, and the number of sectors must be an
+integral power of 2. Blocks are in turn grouped into larger units called
+block groups. Block size is specified at mkfs time and typically is
+4KiB. You may experience mounting problems if block size is greater than
+page size (i.e. 64KiB blocks on a i386 which only has 4KiB memory
+pages). By default a filesystem can contain 2^32 blocks; if the ‘64bit’
+feature is enabled, then a filesystem can have 2^64 blocks. The location
+of structures is stored in terms of the block number the structure lives
+in and not the absolute offset on disk.
+
+For 32-bit filesystems, limits are as follows:
+
+| Item | 1KiB | 2KiB | 4KiB | 64KiB |
+| --- | --- | --- | --- | --- |
+| Blocks | 2^32 | 2^32 | 2^32 | 2^32 |
+| Inodes | 2^32 | 2^32 | 2^32 | 2^32 |
+| File System Size | 4TiB | 8TiB | 16TiB | 256TiB |
+| Blocks Per Block Group | 8,192 | 16,384 | 32,768 | 524,288 |
+| Inodes Per Block Group | 8,192 | 16,384 | 32,768 | 524,288 |
+| Block Group Size | 8MiB | 32MiB | 128MiB | 32GiB |
+| Blocks Per File, Extents | 2^32 | 2^32 | 2^32 | 2^32 |
+| Blocks Per File, Block Maps | 16,843,020 | 134,480,396 | 1,074,791,436 | 4,398,314,962,956 (really 2^32 due to field size limitations) |
+| File Size, Extents | 4TiB | 8TiB | 16TiB | 256TiB |
+| File Size, Block Maps | 16GiB | 256GiB | 4TiB | 256TiB |
+
+For 64-bit filesystems, limits are as follows:
+
+| Item | 1KiB | 2KiB | 4KiB | 64KiB |
+| --- | --- | --- | --- | --- |
+| Blocks | 2^64 | 2^64 | 2^64 | 2^64 |
+| Inodes | 2^32 | 2^32 | 2^32 | 2^32 |
+| File System Size | 16ZiB | 32ZiB | 64ZiB | 1YiB |
+| Blocks Per Block Group | 8,192 | 16,384 | 32,768 | 524,288 |
+| Inodes Per Block Group | 8,192 | 16,384 | 32,768 | 524,288 |
+| Block Group Size | 8MiB | 32MiB | 128MiB | 32GiB |
+| Blocks Per File, Extents | 2^32 | 2^32 | 2^32 | 2^32 |
+| Blocks Per File, Block Maps | 16,843,020 | 134,480,396 | 1,074,791,436 | 4,398,314,962,956 (really 2^32 due to field size limitations) |
+| File Size, Extents | 4TiB | 8TiB | 16TiB | 256TiB |
+| File Size, Block Maps | 16GiB | 256GiB | 4TiB | 256TiB |
+
+Note: Files not using extents (i.e. files using block maps) must be
+placed within the first 2^32 blocks of a filesystem. Files with extents
+must be placed within the first 2^48 blocks of a filesystem. It’s not
+clear what happens with larger filesystems.
+
+|
+& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
+|
