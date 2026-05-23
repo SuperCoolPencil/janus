@@ -2,7 +2,7 @@ package ext4
 
 // The superblock records various information about the enclosing filesystem,
 // such as block counts, inode counts, supported features, maintenance information, and more.
-// https://docs.kernel.org/filesystems/ext4/super.html
+// https://github.com/SuperCoolPencil/janus/blob/master/docs/ext4/super.md#super-block
 type SuperBlock struct {
 	// 0x00: Total inode count.
 	S_inodes_count uint32
