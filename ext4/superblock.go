@@ -43,8 +43,12 @@ type SuperBlock struct {
 	// 0x38: Magic signature (0xEF53).
 	S_magic uint16
 	// 0x3A: File system state.
+	// 0x0001 = Cleanly unmounted, 0x0002 = Errors detected, 0x0004 = Orphans being recovered.
+	// See docs: https://github.com/SuperCoolPencil/janus/blob/master/docs/ext4/super.md#super-state
 	S_state uint16
 	// 0x3C: Behaviour when detecting errors.
+	// 1 = Continue as normal, 2 = Remount read-only, 3 = Panic.
+	// See docs: https://github.com/SuperCoolPencil/janus/blob/master/docs/ext4/super.md#super-errors
 	S_errors uint16
 	// 0x3E: Minor revision level.
 	S_minor_rev_level uint16
@@ -53,8 +57,10 @@ type SuperBlock struct {
 	// 0x44: Maximum time between checks, in seconds.
 	S_checkinterval uint32
 	// 0x48: Creator OS.
+	// 0 = Linux, 1 = Hurd, 2 = Masix, 3 = FreeBSD, 4 = Lites.
 	S_creator_os uint32
 	// 0x4C: Revision level.
+	// 0 = Original format, 1 = v2 format w/ dynamic inode size
 	S_rev_level uint32
 	// 0x50: Default uid for reserved blocks.
 	S_def_resuid uint16
@@ -67,10 +73,13 @@ type SuperBlock struct {
 	// 0x5A: Block group # of this superblock.
 	S_block_group_nr uint16
 	// 0x5C: Compatible feature set flags.
+	// See docs: https://github.com/SuperCoolPencil/janus/blob/master/docs/ext4/super.md#super-compat
 	S_feature_compat uint32
 	// 0x60: Incompatible feature set.
+	// See docs: https://github.com/SuperCoolPencil/janus/blob/master/docs/ext4/super.md#super-incompat
 	S_feature_incompat uint32
 	// 0x64: Readonly-compatible feature set.
+	// See docs: https://github.com/SuperCoolPencil/janus/blob/master/docs/ext4/super.md#super-rocompat
 	S_feature_ro_compat uint32
 	// 0x68: 128-bit UUID for volume.
 	S_uuid [16]byte
@@ -97,6 +106,7 @@ type SuperBlock struct {
 	// 0xEC: HTREE hash seed.
 	S_hash_seed [4]uint32
 	// 0xFC: Default hash algorithm to use for directory hashes.
+	// See docs: https://github.com/SuperCoolPencil/janus/blob/master/docs/ext4/super.md#super-def-hash
 	S_def_hash_version uint8
 	// 0xFD: If 0 or EXT3_JNL_BACKUP_BLOCKS (1) thenS_jnl_blocks contains duplicate copy.
 	S_jnl_backup_type uint8

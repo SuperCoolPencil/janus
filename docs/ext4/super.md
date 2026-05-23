@@ -25,6 +25,8 @@ which includes the FS UUID.
 The ext4 superblock is laid out as follows in
 `struct ext4_super_block`:
 
+See the Go implementation and field comments in [ext4/superblock.go](ext4/superblock.go#L12).
+
 | Offset | Size | Name | Description |
 | --- | --- | --- | --- |
 | 0x0 | \_\_le32 | s\_inodes\_count | Total inode count. |
@@ -135,6 +137,9 @@ The ext4 superblock is laid out as follows in
 | 0x284 | \_\_le32 | s\_reserved[94] | Padding to the end of the block. |
 | 0x3FC | \_\_le32 | s\_checksum | Superblock checksum. |
 
+<a name="super-state"></a>
+### Superblock state
+
 The superblock state is some combination of the following:
 
 | Value | Description |
@@ -143,6 +148,9 @@ The superblock state is some combination of the following:
 | 0x0002 | Errors detected |
 | 0x0004 | Orphans being recovered |
 
+<a name="super-errors"></a>
+### Superblock error policy
+
 The superblock error policy is one of the following:
 
 | Value | Description |
@@ -150,6 +158,9 @@ The superblock error policy is one of the following:
 | 1 | Continue |
 | 2 | Remount read-only |
 | 3 | Panic |
+
+<a name="super-creator"></a>
+### Filesystem creator
 
 The filesystem creator is one of the following:
 
@@ -161,6 +172,9 @@ The filesystem creator is one of the following:
 | 3 | FreeBSD |
 | 4 | Lites |
 
+<a name="super-revision"></a>
+### Superblock revision
+
 The superblock revision is one of the following:
 
 | Value | Description |
@@ -169,6 +183,11 @@ The superblock revision is one of the following:
 | 1 | v2 format w/ dynamic inode sizes |
 
 Note that `EXT4_DYNAMIC_REV` refers to a revision 1 or newer filesystem.
+
+#### 
+
+<a name="super-compat"></a>
+### Compatible features
 
 The superblock compatible features field is a combination of any of the
 following:
@@ -187,6 +206,11 @@ following:
 | 0x200 | Sparse Super Block, v2. If this flag is set, the SB field s\_backup\_bgs points to the two block groups that contain backup superblocks (COMPAT\_SPARSE\_SUPER2). |
 | 0x400 | Fast commits supported. Although fast commits blocks are backward incompatible, fast commit blocks are not always present in the journal. If fast commit blocks are present in the journal, JBD2 incompat feature (JBD2\_FEATURE\_INCOMPAT\_FAST\_COMMIT) gets set (COMPAT\_FAST\_COMMIT). |
 | 0x1000 | Orphan file allocated. This is the special file for more efficient tracking of unlinked but still open inodes. When there may be any entries in the file, we additionally set proper rocompat feature (RO\_COMPAT\_ORPHAN\_PRESENT). |
+
+#### 
+
+<a name="super-incompat"></a>
+### Incompatible features
 
 The superblock incompatible features field is a combination of any of the
 following:
@@ -210,6 +234,11 @@ following:
 | 0x10000 | Encrypted inodes can be present. (INCOMPAT\_ENCRYPT). |
 | 0x20000 | Directories can be marked case-insensitive. (INCOMPAT\_CASEFOLD). |
 
+#### 
+
+<a name="super-rocompat"></a>
+### Read-only compatible features
+
 The superblock read-only compatible features field is a combination of any of
 the following:
 
@@ -232,6 +261,11 @@ the following:
 | 0x8000 | Verity inodes may be present on the filesystem. (RO\_COMPAT\_VERITY) |
 | 0x10000 | Indicates orphan file may have valid orphan entries and thus we need to clean them up when mounting the filesystem (RO\_COMPAT\_ORPHAN\_PRESENT). |
 
+#### 
+
+<a name="super-def-hash"></a>
+### Default hash version
+
 The `s_def_hash_version` field is one of the following:
 
 | Value | Description |
@@ -242,6 +276,12 @@ The `s_def_hash_version` field is one of the following:
 | 0x3 | Legacy, unsigned. |
 | 0x4 | Half MD4, unsigned. |
 | 0x5 | Tea, unsigned. |
+
+
+#### 
+
+<a name="super-mountopts"></a>
+### Default mount options
 
 The `s_default_mount_opts` field is any combination of the following:
 
@@ -260,6 +300,11 @@ The `s_default_mount_opts` field is any combination of the following:
 | 0x0400 | Enable DISCARD support, where the storage device is told about blocks becoming unused. (EXT4\_DEFM\_DISCARD) |
 | 0x0800 | Disable delayed allocation. (EXT4\_DEFM\_NODELALLOC) |
 
+#### 
+
+<a name="super-flags"></a>
+### Superblock flags
+
 The `s_flags` field is any combination of the following:
 
 | Value | Description |
@@ -267,6 +312,11 @@ The `s_flags` field is any combination of the following:
 | 0x0001 | Signed directory hash in use. |
 | 0x0002 | Unsigned directory hash in use. |
 | 0x0004 | To test development code. |
+
+#### 
+
+<a name="super-encrypt"></a>
+### Encryption algorithms
 
 The `s_encrypt_algos` list can contain any of the following:
 
