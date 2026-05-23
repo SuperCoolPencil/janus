@@ -281,3 +281,14 @@ func (sb *SuperBlock) InodeSize() uint16 {
 	}
 	return 128
 }
+
+// BlockGroupCount calculates the total number of block groups in the filesystem.
+func (sb *SuperBlock) BlockGroupCount() uint32 {
+	// Total blocks divided by blocks per group.
+	// We round up in case the last block group is smaller than the others.
+	groups := sb.S_blocks_count_lo / sb.S_blocks_per_group
+	if sb.S_blocks_count_lo%sb.S_blocks_per_group != 0 {
+		groups++
+	}
+	return groups
+}
