@@ -23,7 +23,3 @@ i\_mtime/i\_generation *may* store a back-reference to the inode number
 and i\_generation of the **one** owning inode (in cases where the EA
 inode is not referenced by multiple inodes) to verify that the EA inode
 is the correct one being accessed.
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

@@ -278,7 +278,3 @@ The `s_encrypt_algos` list can contain any of the following:
 | 3 | 256-bit AES in CBC mode (ENCRYPTION\_MODE\_AES\_256\_CBC). |
 
 Total size of the superblock is 1024 bytes.
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

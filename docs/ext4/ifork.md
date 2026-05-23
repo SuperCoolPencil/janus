@@ -118,7 +118,3 @@ including) the checksum itself.
 If the inline data feature is enabled for the filesystem and the flag is
 set for the inode, it is possible that the first 60 bytes of the file
 data are stored here.
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

@@ -214,7 +214,3 @@ atomic writes.
 * [Block and Inode Allocation Policy](allocators.md) - Documentation on block allocation in ext4
 * Support for atomic block writes in 6.13:
   <https://lwn.net/Articles/1009298/>
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

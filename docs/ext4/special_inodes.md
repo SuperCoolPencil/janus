@@ -36,7 +36,3 @@ hierarchy. These are generally reference from the superblock. They are:
 | s\_lpf\_ino | Inode number of lost+found directory. |
 | s\_prj\_quota\_inum | Inode number of quota file tracking project quotas |
 | s\_orphan\_file\_inum | Inode number of file tracking orphan inodes. |
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

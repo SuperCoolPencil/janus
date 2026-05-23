@@ -256,7 +256,3 @@ seem to be fixed as of kernel 3.12 and e2fsprogs 1.42.8. 64-bit kernels
 incorrectly use the extra epoch bits 1,1 for dates between 1901 and
 1970. At some point the kernel will be fixed and e2fsck will fix this
 situation, assuming that it is run before 2310.
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

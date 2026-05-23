@@ -48,7 +48,3 @@ order.
     - [2.10.6.2. Application Interface](atomic_writes.md#application-interface)
   + [2.10.7. Hardware Support](atomic_writes.md#hardware-support)
   + [2.10.8. See Also](atomic_writes.md#see-also)
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

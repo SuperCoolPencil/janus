@@ -43,7 +43,3 @@ metadata.
 
 Verity and DAX are not compatible and attempts to set both of these flags
 on a file will fail.
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

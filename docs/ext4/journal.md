@@ -386,7 +386,3 @@ discarded or zero-filled, respectively, after the journal checkpoint is
 complete. EXT4\_IOC\_CHECKPOINT\_FLAG\_DISCARD and EXT4\_IOC\_CHECKPOINT\_FLAG\_ZEROOUT
 cannot both be set. The ioctl may be useful when snapshotting a system or for
 complying with content deletion SLOs.
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

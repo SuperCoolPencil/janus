@@ -61,7 +61,3 @@ the end of a spinning drive get a raw deal performance-wise.
 
 Of course if all of these mechanisms fail, one can always use e4defrag
 to defragment files.
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

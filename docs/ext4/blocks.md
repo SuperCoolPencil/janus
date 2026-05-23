@@ -55,7 +55,3 @@ Note: Files not using extents (i.e. files using block maps) must be
 placed within the first 2^32 blocks of a filesystem. Files with extents
 must be placed within the first 2^48 blocks of a filesystem. It’s not
 clear what happens with larger filesystems.
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

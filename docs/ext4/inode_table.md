@@ -14,7 +14,3 @@ Inode tables are statically allocated at mkfs time. Each block group
 descriptor points to the start of the table, and the superblock records
 the number of inodes per group. See [inode documentation](inodes.md)
 for more information on inode table layout.
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

@@ -231,7 +231,3 @@ The dx\_tail structure is 8 bytes long and looks like this:
 The checksum is calculated against the FS UUID, the htree index header
 (dx\_root or dx\_node), all of the htree indices (dx\_entry) that are in
 use, and the tail block (dx\_tail) with the dt\_checksum initially set to 0.
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

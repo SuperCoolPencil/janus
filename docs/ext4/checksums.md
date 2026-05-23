@@ -45,7 +45,3 @@ of checksum. The checksum function is whatever the superblock describes
 | Bitmaps | \_\_le32 or \_\_le16 | UUID + the entire bitmap. Checksums are stored in the group descriptor, and truncated if the group descriptor size is 32 bytes (i.e. ^64bit) |
 | Inodes | \_\_le32 | UUID + inode number + inode generation + the entire inode. The checksum field is set to zero. Each inode has its own checksum. |
 | Group Descriptors | \_\_le16 | If metadata\_csum, then UUID + group number + the entire descriptor; else if gdt\_csum, then crc16(UUID + group number + the entire descriptor). In all cases, only the lower 16 bits are stored. |
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

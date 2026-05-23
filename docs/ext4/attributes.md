@@ -113,7 +113,3 @@ POSIX ACLs are stored in a reduced version of the Linux kernel (and
 libacl’s) internal ACL format. The key difference is that the version
 number is different (1) and the `e_id` field is only stored for named
 user and group ACLs.
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

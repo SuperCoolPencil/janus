@@ -28,7 +28,3 @@ allocated to files.
 * [4.4. Extended Attributes](attributes.md)
   + [4.4.1. Attribute Name Indices](attributes.md#attribute-name-indices)
   + [4.4.2. POSIX ACLs](attributes.md#posix-acls)
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

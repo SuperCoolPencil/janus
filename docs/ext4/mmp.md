@@ -49,7 +49,3 @@ The MMP structure (`struct mmp_struct`) is as follows:
 | 0x72 | \_\_le16 | mmp\_pad1 | Zero. |
 | 0x74 | \_\_le32[226] | mmp\_pad2 | Zero. |
 | 0x3FC | \_\_le32 | mmp\_checksum | Checksum of the MMP block. |
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

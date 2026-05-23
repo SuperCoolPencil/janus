@@ -41,7 +41,3 @@ entries cannot span the two.
 
 Inline directory entries are not checksummed, as the inode checksum
 should protect all inline data contents.
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

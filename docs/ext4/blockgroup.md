@@ -122,7 +122,3 @@ By not writing zeroes to the bitmaps and inode table, mkfs time is
 reduced considerably. Note the feature flag is RO\_COMPAT\_GDT\_CSUM,
 but the dumpe2fs output prints this as “uninit\_bg”. They are the same
 thing.
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

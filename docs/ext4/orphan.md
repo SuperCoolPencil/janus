@@ -41,7 +41,3 @@ filesystem, we read the whole orphan file and process all orphan inodes found
 there as usual. When cleanly unmounting the filesystem we remove the
 RO\_COMPAT\_ORPHAN\_PRESENT feature to avoid unnecessary scanning of the orphan
 file and also make the filesystem fully compatible with older kernels.
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

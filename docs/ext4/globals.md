@@ -31,7 +31,3 @@ have static metadata at fixed locations.
   + [3.6.10. Fast Commit Replay Idempotence](journal.md#fast-commit-replay-idempotence)
   + [3.6.11. Journal Checkpoint](journal.md#journal-checkpoint)
 * [3.7. Orphan file](orphan.md)
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

@@ -26,7 +26,3 @@ necessarily the case that no blocks are in use -- if `meta_bg` is set,
 the bitmaps and group descriptor live inside the group. Unfortunately,
 `ext2fs_test_block_bitmap2()` will return ‘0’ for those locations,
 which produces confusing debugfs output.
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

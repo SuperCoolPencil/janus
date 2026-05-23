@@ -38,7 +38,3 @@
   + [4.2. The Contents of inode.i\_block](ifork.md)
   + [4.3. Directory Entries](directory.md)
   + [4.4. Extended Attributes](attributes.md)
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

@@ -83,7 +83,3 @@ Block group flags can be any combination of the following:
 | 0x1 | inode table and bitmap are not initialized (EXT4\_BG\_INODE\_UNINIT). |
 | 0x2 | block bitmap is not initialized (EXT4\_BG\_BLOCK\_UNINIT). |
 | 0x4 | inode table is zeroed (EXT4\_BG\_INODE\_ZEROED). |
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

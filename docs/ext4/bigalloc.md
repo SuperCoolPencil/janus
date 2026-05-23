@@ -38,7 +38,3 @@ block, even for directories. TaoBao had a patchset to extend the “use
 units of clusters instead of blocks” to the extent tree, though it is
 not clear where those patches went-- they eventually morphed into
 “extent tree v2” but that code has not landed as of May 2015.
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|

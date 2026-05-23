@@ -47,7 +47,3 @@ entry.
 Also see <https://www.nongnu.org/ext2-doc/> for quite a collection of
 information about ext2/3. Here’s another old reference:
 <http://wiki.osdev.org/Ext2>
-
-|
-& [Alabaster 0.7.16](https://alabaster.readthedocs.io)
-|
