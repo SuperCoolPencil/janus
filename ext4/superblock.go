@@ -1,5 +1,11 @@
 package ext4
 
+import (
+	"bytes"
+	"encoding/binary"
+	"fmt"
+)
+
 // The superblock records various information about the enclosing filesystem,
 // such as block counts, inode counts, supported features, maintenance information, and more.
 // https://github.com/SuperCoolPencil/janus/blob/master/docs/ext4/super.md#super-block
@@ -222,15 +228,12 @@ const (
 
 // ReadSuperBlock reads and decodes the superblock from the underlying device/file.
 func (fs *FileSystem) ReadSuperBlock() (*SuperBlock, error) {
-
-	// The superblock is located at an offset of 1024 bytes from the start of the device.
 	var sb SuperBlock
-
 	buf := make([]byte, 1024)
 
 	_, err := fs.dev.ReadAt(buf, SUPERBLOCK_OFFSET)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read superblock from device: %w", err)
 	}
 
 	err = decodeSuperBlock(buf, &sb)
@@ -244,8 +247,37 @@ func (fs *FileSystem) ReadSuperBlock() (*SuperBlock, error) {
 
 func decodeSuperBlock(data []byte, sb *SuperBlock) error {
 
-	// TODO: Implement decoding of the superblock fields from the byte slice.
-	// This will involve reading the fields in the correct order and converting them from bytes to their respective types.
+	// Wrap the raw bytes in an io.Reader
+	reader := bytes.NewReader(data)
+
+	// Ext4 stores all integers in Little Endian format.
+	// binary.Read uses reflection to instantly map the bytes
+	// directly into aligned struct fields.
+	err := binary.Read(reader, binary.LittleEndian, sb)
+	if err != nil {
+		return fmt.Errorf("failed to parse superblock binary data: %w", err)
+	}
+
+	// Always validate the magic number immediately after parsing
+	if sb.S_magic != MAGIC_NUMBER {
+		return fmt.Errorf("invalid ext4 magic number: expected 0x%X, got 0x%X", MAGIC_NUMBER, sb.S_magic)
+	}
 
 	return nil
+}
+
+// BlockSize calculates the actual block size in bytes.
+// (Block size is 2^(10 + S_log_block_size))
+func (sb *SuperBlock) BlockSize() uint64 {
+	return 1024 << sb.S_log_block_size
+}
+
+// InodeSize returns the size of an inode.
+// In dynamic revisions (>= 1), this is stored in the superblock.
+// In the original revision (0), it is hardcoded to 128.
+func (sb *SuperBlock) InodeSize() uint16 {
+	if sb.S_rev_level > 0 {
+		return sb.S_inode_size
+	}
+	return 128
 }
