@@ -16,7 +16,7 @@ type SuperBlock struct {
 	S_free_inodes_count uint32
 	// 0x14: First data block.
 	S_first_data_block uint32
-	// 0x18: Block size is 2^(10 +S_log_block_size).
+	// 0x18: Block size is 2^(10 + S_log_block_size).
 	S_log_block_size uint32
 	// 0x1C: Cluster size if bigalloc enabled.
 	S_log_cluster_size uint32
@@ -184,17 +184,17 @@ type SuperBlock struct {
 	S_prj_quota_inum uint32
 	// 0x270: Checksum seed used for metadata_csum calculations.
 	S_checksum_seed uint32
-	// 0x274: Upper 8 bits of theS_wtime field.
+	// 0x274: Upper 8 bits of the S_wtime field.
 	S_wtime_hi uint8
-	// 0x275: Upper 8 bits of theS_mtime field.
+	// 0x275: Upper 8 bits of the S_mtime field.
 	S_mtime_hi uint8
-	// 0x276: Upper 8 bits of theS_mkfs_time field.
+	// 0x276: Upper 8 bits of the S_mkfs_time field.
 	S_mkfs_time_hi uint8
-	// 0x277: Upper 8 bits of theS_lastcheck field.
+	// 0x277: Upper 8 bits of the S_lastcheck field.
 	S_lastcheck_hi uint8
-	// 0x278: Upper 8 bits of theS_first_error_time field.
+	// 0x278: Upper 8 bits of th eS_first_error_time field.
 	S_first_error_time_hi uint8
-	// 0x279: Upper 8 bits of theS_last_error_time field.
+	// 0x279: Upper 8 bits of the S_last_error_time field.
 	S_last_error_time_hi uint8
 	// 0x27A: First error errcode.
 	S_first_error_errcode uint8
