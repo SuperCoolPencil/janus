@@ -1,5 +1,16 @@
 package ext4
 
+// Superblock is the first structure in the block group, and contains metadata
+// about the entire filesystem. It is always present at a fixed offset from the
+// start of the device (1024 bytes).
+
+// If the sparse_super feature flag is set, redundant copies of the superblock
+// and group descriptors are kept only in the groups whose group number is
+// either 0 or a power of 3, 5, or 7. If the flag is not set, redundant copies
+// are kept in all groups.
+
+// See docs: github.com/SuperCoolPencil/janus/blob/master/docs/ext4/super.md
+
 import (
 	"bytes"
 	"encoding/binary"
@@ -7,7 +18,8 @@ import (
 )
 
 // The superblock records various information about the enclosing filesystem,
-// such as block counts, inode counts, supported features, maintenance information, and more.
+// such as block counts, inode counts, supported features, maintenance
+// information, and more.
 // https://github.com/SuperCoolPencil/janus/blob/master/docs/ext4/super.md#super-block
 type SuperBlock struct {
 	// 0x00: Total inode count.
@@ -230,7 +242,8 @@ type SuperBlock struct {
 
 const (
 
-	// The superblock is located at an offset of 1024 bytes from the start of the device.
+	// The superblock is located at an offset of 1024 bytes from the start of
+	// the device.
 	SUPERBLOCK_OFFSET = 1024
 	// The magic number that identifies an ext4 filesystem.
 	MAGIC_NUMBER = 0xEF53
