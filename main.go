@@ -10,23 +10,29 @@ import (
 )
 
 func main() {
-	// 1. Open the virtual ext4 disk image
+	if err := run(); err != nil {
+		log.Fatalf("%v", err)
+	}
+}
+
+func run() error {
+	// Open the virtual ext4 disk image
 	// We use os.O_RDONLY because a read-only driver is our first major milestone
-	file, err := os.OpenFile("testfs.img", os.O_RDONLY, 0666)
+	file, err := os.OpenFile("testfs.img", os.O_RDONLY, 0o666)
 	if err != nil {
-		log.Fatalf("Failed to open testfs.img: %v\n(Did you create it and unmount it in Linux?)", err)
+		return fmt.Errorf("failed to open testfs.img: %w\n(Did you create it and unmount it in Linux?)", err)
 	}
 	defer file.Close()
 
 	fs, err := ext4.NewFileSystem(file)
 	if err != nil {
-		log.Fatalf("Failed to initialize filesystem: %v", err)
+		return fmt.Errorf("failed to initialize filesystem: %w", err)
 	}
 
 	// Read and decode the Superblock
 	sb, err := fs.ReadSuperBlock()
 	if err != nil {
-		log.Fatalf("Failed to mount filesystem: %v", err)
+		return fmt.Errorf("failed to mount filesystem: %w", err)
 	}
 
 	// Clean up C-style strings for Go printing
@@ -49,21 +55,21 @@ func main() {
 	// Only support clean filesystems for now
 	if sb.S_state != ext4.SUPERBLOCK_STATE_CLEAN {
 		fmt.Printf("Warning: Filesystem is not clean! State: 0x%04x\n", sb.S_state)
-		return
+		return nil
 	}
 
 	// Read block group 0's descriptor
 	err = fs.ReadGroupDescriptors()
 	if err != nil {
-		log.Fatalf("Failed to read group descriptor: %v", err)
+		return fmt.Errorf("failed to read group descriptor: %w", err)
 	}
-
-	// fmt.Printf("Block group 0: %+v\n", fs.Bgds[0])
 
 	// Read Root Inode
 	rootInode, err := fs.ReadRootInode()
 	if err != nil {
-		log.Fatalf("Failed to read root inode: %v", err)
+		return fmt.Errorf("failed to read root inode: %w", err)
 	}
 	fmt.Printf("Root inode: %+v\n", rootInode)
+
+	return nil
 }

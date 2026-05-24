@@ -295,7 +295,6 @@ func (fs *FileSystem) ReadSuperBlock() (*SuperBlock, error) {
 }
 
 func decodeSuperBlock(data []byte, sb *SuperBlock) error {
-
 	// Wrap the raw bytes in an io.Reader
 	reader := bytes.NewReader(data)
 
@@ -316,7 +315,7 @@ func decodeSuperBlock(data []byte, sb *SuperBlock) error {
 }
 
 // BlockSize calculates the actual block size in bytes.
-// (Block size is 2^(10 + S_log_block_size))
+// (Block size is 2^(10 + S_log_block_size)).
 func (sb *SuperBlock) BlockSize() uint64 {
 	return 1024 << sb.S_log_block_size
 }
@@ -343,7 +342,8 @@ func (sb *SuperBlock) BlockGroupCount() uint32 {
 	return groups
 }
 
-// GroupDescriptorSize returns the size of a group descriptor in bytes, which is either 32 or 64 depending on the features of the filesystem.
+// GroupDescriptorSize returns the size of a group descriptor in bytes,
+// which is either 32 or 64 depending on the features of the filesystem.
 func (sb *SuperBlock) GroupDescriptorSize() uint16 {
 	if sb.S_desc_size != 0 {
 		return sb.S_desc_size
@@ -352,6 +352,7 @@ func (sb *SuperBlock) GroupDescriptorSize() uint16 {
 }
 
 func (sb *SuperBlock) BlockGroupDescriptorCount() uint32 {
-	// The number of group descriptors is equal to the number of block groups, which can be calculated from the total block count and blocks per group.
+	// The number of group descriptors is equal to the number of block groups,
+	// which can be calculated from the total block count and blocks per group.
 	return sb.BlockGroupCount()
 }

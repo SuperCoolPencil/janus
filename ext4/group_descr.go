@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"math"
 )
 
 // Group descriptors if present are the second structure in the block group.
@@ -68,14 +69,13 @@ type GroupDescriptor struct {
 }
 
 const (
-	// block group flags
+	// block group flags.
 	BG_INODE_UNINIT = 0x0001
 	BG_BLOCK_UNINIT = 0x0002
 	BG_INODE_ZEROED = 0x0004
 )
 
 func (fs *FileSystem) ReadGroupDescriptor(groupNum uint32) (*GroupDescriptor, error) {
-
 	sb := fs.sb
 	if sb == nil {
 		return nil, fmt.Errorf("failed to read superblock")
@@ -100,26 +100,29 @@ func (fs *FileSystem) ReadGroupDescriptor(groupNum uint32) (*GroupDescriptor, er
 	}
 	descOffset := descTableStart + uint64(groupNum)*uint64(descSize)
 
+	if descOffset > math.MaxInt64 {
+		return nil, fmt.Errorf("descriptor offset %d overflows int64", descOffset)
+	}
+
 	buf := make([]byte, descSize)
 	_, err := fs.dev.ReadAt(buf, int64(descOffset))
 	if err != nil {
-		return nil, fmt.Errorf("failed to read group descriptor: %v", err)
+		return nil, fmt.Errorf("failed to read group descriptor: %w", err)
 	}
 
 	var gd GroupDescriptor
 	err = binary.Read(bytes.NewReader(buf), binary.LittleEndian, &gd)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode group descriptor: %v", err)
+		return nil, fmt.Errorf("failed to decode group descriptor: %w", err)
 	}
 
 	return &gd, nil
 }
 
 func (fs *FileSystem) ReadGroupDescriptors() error {
-
 	sb := fs.sb
 	if sb == nil {
-		return fmt.Errorf("superblock not read yet!")
+		return fmt.Errorf("superblock not read yet")
 	}
 
 	for i := range sb.BlockGroupCount() {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"math"
 )
 
 // The inode stores all the metdata pertaining to the file
@@ -103,7 +104,7 @@ type Inode struct {
 const (
 	RootInodeNum = 2
 
-	// File mode (i_mode field) type and permission flags
+	// File mode (i_mode field) type and permission flags.
 	S_IXOTH  = 0x1    // Others may execute
 	S_IWOTH  = 0x2    // Others may write
 	S_IROTH  = 0x4    // Others may read
@@ -124,7 +125,7 @@ const (
 	S_IFLNK  = 0xA000 // Symbolic link
 	S_IFSOCK = 0xC000 // Socket
 
-	// Inode flags (i_flags field)
+	// Inode flags (i_flags field).
 	EXT4_SECRM_FL            = 0x1        // Secure deletion
 	EXT4_UNRM_FL             = 0x2        // Undelete
 	EXT4_COMPR_FL            = 0x4        // Compress file
@@ -171,7 +172,10 @@ func (fs *FileSystem) ReadInode(inodeNum uint32) (*Inode, error) {
 
 	// Ensure we don't go out of bounds
 	if groupIndex >= fs.GroupCount {
-		return nil, fmt.Errorf("inode %d belongs to group %d, but we only have %d groups", inodeNum, groupIndex, fs.GroupCount)
+		return nil, fmt.Errorf(
+			"inode %d belongs to group %d, but we only have %d groups",
+			inodeNum, groupIndex, fs.GroupCount,
+		)
 	}
 
 	// Get the Block Group Descriptor for that group
@@ -190,23 +194,27 @@ func (fs *FileSystem) ReadInode(inodeNum uint32) (*Inode, error) {
 	// Offset = (Table Start Block * Block Size) + (Local Index * Inode Size)
 	offset := (tableBlock * fs.BlockSize) + (uint64(localInodeIndex) * uint64(fs.InodeSize))
 
+	if offset > math.MaxInt64 {
+		return nil, fmt.Errorf("inode offset %d overflows int64", offset)
+	}
+
 	// Read and decode the Inode
 	var inode Inode
 	buf := make([]byte, fs.InodeSize)
 	_, err := fs.dev.ReadAt(buf, int64(offset))
 	if err != nil {
-		return nil, fmt.Errorf("failed to read inode %d at offset %d: %v", inodeNum, offset, err)
+		return nil, fmt.Errorf("failed to read inode %d at offset %d: %w", inodeNum, offset, err)
 	}
 
 	err = binary.Read(bytes.NewReader(buf), binary.LittleEndian, &inode)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode inode %d: %v", inodeNum, err)
+		return nil, fmt.Errorf("failed to decode inode %d: %w", inodeNum, err)
 	}
 
 	return &inode, nil
 }
 
-// ReadRootInode is just a convenient wrapper
+// ReadRootInode is just a convenient wrapper.
 func (fs *FileSystem) ReadRootInode() (*Inode, error) {
 	// In ext2/3/4, the root directory is ALWAYS Inode 2
 	return fs.ReadInode(2)
