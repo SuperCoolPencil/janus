@@ -38,12 +38,12 @@ func main() {
 
 	fmt.Printf("Mounted ext4 filesystem with volume name: %s\n", volName)
 	fmt.Printf("Superblock Details:\n")
-	fmt.Printf("  Block size: %d bytes (log_block_size: %d)\n", sb.BlockSize(), sb.S_log_block_size)
+	fmt.Printf("  Block size: %d bytes (log_block_size: %d)\n", fs.BlockSize, sb.S_log_block_size)
 	fmt.Printf("  Inodes count: %d\n", sb.S_inodes_count)
-	fmt.Printf("  Blocks count (lo): %d\n", sb.S_blocks_count_lo)
+	fmt.Printf("  Blocks count (lo): %d\n", fs.GroupCount)
 	fmt.Printf("  Inodes per group: %d\n", sb.S_inodes_per_group)
 	fmt.Printf("  Blocks per group: %d\n", sb.S_blocks_per_group)
-	fmt.Printf("  Descriptor size: %d\n", sb.S_desc_size)
+	fmt.Printf("  Descriptor size: %d\n", fs.DescSize)
 	fmt.Printf("  Calculated Block Group Count: %d\n", sb.BlockGroupCount())
 
 	// Only support clean filesystems for now
@@ -52,11 +52,18 @@ func main() {
 		return
 	}
 
-	// Read block group 0's descirptor
+	// Read block group 0's descriptor
 	err = fs.ReadGroupDescriptors()
 	if err != nil {
 		log.Fatalf("Failed to read group descriptor: %v", err)
 	}
 
-	fmt.Printf("Block group 0: %+v\n", fs.Bgds[0])
+	// fmt.Printf("Block group 0: %+v\n", fs.Bgds[0])
+
+	// Read Root Inode
+	rootInode, err := fs.ReadRootInode()
+	if err != nil {
+		log.Fatalf("Failed to read root inode: %v", err)
+	}
+	fmt.Printf("Root inode: %+v\n", rootInode)
 }

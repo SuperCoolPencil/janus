@@ -1,5 +1,11 @@
 package ext4
 
+import (
+	"bytes"
+	"encoding/binary"
+	"fmt"
+)
+
 // The inode stores all the metdata pertaining to the file
 // To find the information associated with a file,
 // one must traverse the directory files to find the directory entry
@@ -150,3 +156,58 @@ const (
 	EXT4_CASEFOLD_FL         = 0x40000000 // Case-insensitive lookups
 	EXT4_RESERVED_FL         = 0x80000000 // Reserved for ext4 library
 )
+
+// ReadInode locates and parses any inode on the filesystem by its number.
+func (fs *FileSystem) ReadInode(inodeNum uint32) (*Inode, error) {
+	if inodeNum < 1 {
+		return nil, fmt.Errorf("invalid inode number: %d (inodes start at 1)", inodeNum)
+	}
+
+	// Calculate which block group contains this inode
+	groupIndex := (inodeNum - 1) / fs.sb.S_inodes_per_group
+
+	// Calculate the index of the inode INSIDE that block group's table
+	localInodeIndex := (inodeNum - 1) % fs.sb.S_inodes_per_group
+
+	// Ensure we don't go out of bounds
+	if groupIndex >= fs.GroupCount {
+		return nil, fmt.Errorf("inode %d belongs to group %d, but we only have %d groups", inodeNum, groupIndex, fs.GroupCount)
+	}
+
+	// Get the Block Group Descriptor for that group
+	bgd := fs.Bgds[groupIndex]
+	if bgd.BG_inode_table_lo == 0 {
+		return nil, fmt.Errorf("inode table not found in group %d", groupIndex)
+	}
+
+	// Find the start block of the Inode Table
+	tableBlock := uint64(bgd.BG_inode_table_lo)
+	if fs.DescSize > 32 {
+		tableBlock |= uint64(bgd.BG_inode_table_hi) << 32
+	}
+
+	// Calculate the exact byte offset on the disk
+	// Offset = (Table Start Block * Block Size) + (Local Index * Inode Size)
+	offset := (tableBlock * fs.BlockSize) + (uint64(localInodeIndex) * uint64(fs.InodeSize))
+
+	// Read and decode the Inode
+	var inode Inode
+	buf := make([]byte, fs.InodeSize)
+	_, err := fs.dev.ReadAt(buf, int64(offset))
+	if err != nil {
+		return nil, fmt.Errorf("failed to read inode %d at offset %d: %v", inodeNum, offset, err)
+	}
+
+	err = binary.Read(bytes.NewReader(buf), binary.LittleEndian, &inode)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode inode %d: %v", inodeNum, err)
+	}
+
+	return &inode, nil
+}
+
+// ReadRootInode is just a convenient wrapper
+func (fs *FileSystem) ReadRootInode() (*Inode, error) {
+	// In ext2/3/4, the root directory is ALWAYS Inode 2
+	return fs.ReadInode(2)
+}
