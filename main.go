@@ -39,6 +39,14 @@ func main() {
 	}
 
 	fmt.Printf("Mounted ext4 filesystem with volume name: %s\n", volName)
+	fmt.Printf("Superblock Details:\n")
+	fmt.Printf("  Block size: %d bytes (log_block_size: %d)\n", sb.BlockSize(), sb.S_log_block_size)
+	fmt.Printf("  Inodes count: %d\n", sb.S_inodes_count)
+	fmt.Printf("  Blocks count (lo): %d\n", sb.S_blocks_count_lo)
+	fmt.Printf("  Inodes per group: %d\n", sb.S_inodes_per_group)
+	fmt.Printf("  Blocks per group: %d\n", sb.S_blocks_per_group)
+	fmt.Printf("  Descriptor size: %d\n", sb.S_desc_size)
+	fmt.Printf("  Calculated Block Group Count: %d\n", sb.BlockGroupCount())
 
 	if sb.S_state != ext4.SUPERBLOCK_STATE_CLEAN {
 		fmt.Printf("Warning: Filesystem is not clean! State: 0x%04x\n", sb.S_state)

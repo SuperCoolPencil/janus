@@ -99,7 +99,18 @@ func (fs *FileSystem) ReadGroupDescriptor(groupNum uint32) (*GroupDescriptor, er
 	}
 
 	descSize := sb.GroupDescriptorSize()
-	descTableStart := SUPERBLOCK_OFFSET + sb.BlockSize() // Group descriptor table starts immediately after the superblock's block
+
+	// The Group Descriptor Table starts in the block following the superblock.
+	// - If block size is 1024 bytes, the superblock is in block 1 (offset 1024),
+	//   and the GDT starts in block 2 (offset 2048).
+	// - If block size is larger (e.g. 4096), the superblock is in block 0 (offset 1024),
+	//   and the GDT starts in block 1 (offset block_size).
+	var descTableStart uint64
+	if sb.BlockSize() == 1024 {
+		descTableStart = 2048
+	} else {
+		descTableStart = sb.BlockSize()
+	}
 	descOffset := descTableStart + uint64(groupNum)*uint64(descSize)
 
 	buf := make([]byte, descSize)
