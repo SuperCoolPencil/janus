@@ -37,5 +37,6 @@
 * [4. Dynamic Structures](dynamic.md)
   + [4.1. Index Nodes](inodes.md)
   + [4.2. The Contents of inode.i\_block](ifork.md)
+  + [4.2.1. Extent Tree & Hash Tree On-Disk Layout](disk_layout_part2.md)
   + [4.3. Directory Entries](directory.md)
   + [4.4. Extended Attributes](attributes.md)
