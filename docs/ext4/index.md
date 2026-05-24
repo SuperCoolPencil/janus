@@ -25,6 +25,7 @@
   + [2.8. Large Extended Attribute Values](eainode.md)
   + [2.9. Verity files](verity.md)
   + [2.10. Atomic Block Writes](atomic_writes.md)
+  + [2.11. Extents and Extent Allocation](extent_allocation.md)
 * [3. Global Structures](globals.md)
   + [3.1. Super Block](super.md)
   + [3.2. Block Group Descriptors](group_descr.md)
