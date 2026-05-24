@@ -285,13 +285,10 @@ func (fs *FileSystem) ReadSuperBlock() (*SuperBlock, error) {
 		return nil, err
 	}
 
-	// Check for 64bit support
-	// if group desc size is 32bit -> 32bit
-	if sb.S_desc_size == 32 {
-		fs.Is64 = false
-	} else {
-		fs.Is64 = true
-	}
+	fs.BlockSize = sb.BlockSize()
+	fs.InodeSize = sb.InodeSize()
+	fs.GroupCount = sb.BlockGroupCount()
+	fs.DescSize = sb.GroupDescriptorSize()
 
 	fs.sb = &sb
 	return &sb, nil

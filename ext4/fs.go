@@ -5,14 +5,21 @@ import (
 	"io"
 )
 
-// The filesystem struct represents the state of a mounted ext4 filesystem. It
-// holds a reference to the underlying device (or file) and the superblock.
+// FileSystem represents an active, parsed ext4 filesystem.
 type FileSystem struct {
-	// The underlying device or file representing the filesystem.
+	// The underlying device/file.
 	dev io.ReaderAt
-	sb  *SuperBlock
-	// Whether the filesystem is 64-bit
-	Is64 bool
+
+	// The parsed Superblock.
+	sb *SuperBlock
+
+	// A slice of all Block Group Descriptors.
+	bgd []GroupDescriptor
+
+	BlockSize  uint64
+	InodeSize  uint16
+	GroupCount uint32
+	DescSize   uint16
 }
 
 func NewFileSystem(device io.ReaderAt) (*FileSystem, error) {

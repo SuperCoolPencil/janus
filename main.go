@@ -52,11 +52,19 @@ func main() {
 		return
 	}
 
-	block_group_descr, err := fs.ReadGroupDescriptor(0)
+	// Read block group 0's descirptor
+	bg0_descr, err := fs.ReadGroupDescriptor(0)
 
 	if err != nil {
 		log.Fatalf("Failed to read group descriptor: %v", err)
 	}
 
-	fmt.Printf("block group 0 descriptor: %+v\n", block_group_descr)
+	fmt.Printf("block group 0 descriptor: %+v\n", bg0_descr)
+
+	// Now we read the root directory inode (inode 2)
+	addr := uint64(bg0_descr.BG_inode_table_lo)
+	if fs.DescSize > 32 {
+		addr |= uint64(bg0_descr.BG_inode_table_hi) << 32
+	}
+
 }
