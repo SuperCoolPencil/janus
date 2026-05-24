@@ -18,20 +18,18 @@ func main() {
 	}
 	defer file.Close()
 
-	// 2. Initialize our FileSystem state object
-	// (Assuming you have NewFileSystem defined in your ext4 package)
 	fs, err := ext4.NewFileSystem(file)
 	if err != nil {
 		log.Fatalf("Failed to initialize filesystem: %v", err)
 	}
 
-	// 3. Read and decode the Superblock
+	// Read and decode the Superblock
 	sb, err := fs.ReadSuperBlock()
 	if err != nil {
 		log.Fatalf("Failed to mount filesystem: %v", err)
 	}
 
-	// 4. Clean up C-style strings for Go printing
+	// Clean up C-style strings for Go printing
 	// Volume name is 16 bytes padded with null characters (\x00)
 	volName := string(bytes.Trim(sb.S_volume_name[:], "\x00"))
 	if volName == "" {
@@ -48,6 +46,7 @@ func main() {
 	fmt.Printf("  Descriptor size: %d\n", sb.S_desc_size)
 	fmt.Printf("  Calculated Block Group Count: %d\n", sb.BlockGroupCount())
 
+	// Only support clean filesystems for now
 	if sb.S_state != ext4.SUPERBLOCK_STATE_CLEAN {
 		fmt.Printf("Warning: Filesystem is not clean! State: 0x%04x\n", sb.S_state)
 		return
@@ -59,5 +58,5 @@ func main() {
 		log.Fatalf("Failed to read group descriptor: %v", err)
 	}
 
-	fmt.Printf("First block group descriptor: %+v\n", block_group_descr)
+	fmt.Printf("block group 0 descriptor: %+v\n", block_group_descr)
 }

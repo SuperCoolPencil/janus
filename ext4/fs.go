@@ -11,6 +11,8 @@ type FileSystem struct {
 	// The underlying device or file representing the filesystem.
 	dev io.ReaderAt
 	sb  *SuperBlock
+	// Whether the filesystem is 64-bit
+	Is64 bool
 }
 
 func NewFileSystem(device io.ReaderAt) (*FileSystem, error) {
