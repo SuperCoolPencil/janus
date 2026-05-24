@@ -242,11 +242,32 @@ type SuperBlock struct {
 
 const (
 
-	// The superblock is located at an offset of 1024 bytes from the start of
-	// the device.
+	// The superblock is located at an offset of 1024B
+	// from the start of the device.
 	SUPERBLOCK_OFFSET = 1024
 	// The magic number that identifies an ext4 filesystem.
 	MAGIC_NUMBER = 0xEF53
+
+	// Filesystem states (S_state field).
+	SUPERBLOCK_STATE_CLEAN  = 0x0001
+	SUPERBLOCK_STATE_ERRORS = 0x0002
+	SUPERBLOCK_STATE_ORPHAN = 0x0004
+
+	// Error handling behaviours (S_errors field).
+	SUPERBLOCK_ERRORS_CONTINUE = 1
+	SUPERBLOCK_ERRORS_RO       = 2
+	SUPERBLOCK_ERRORS_PANIC    = 3
+
+	// Filesystem creator OS types (S_creator_os field).
+	CREATOR_OS_LINUX   = 0
+	CREATOR_OS_HURD    = 1
+	CREATOR_OS_MASIX   = 2
+	CREATOR_OS_FREEBSD = 3
+	CREATOR_OS_LITES   = 4
+
+	// Superblock revision levels (S_rev_level field).
+	REV_LEVEL_ORIGINAL = 0
+	REV_LEVEL_DYNAMIC  = 1
 )
 
 // ReadSuperBlock reads and decodes the superblock from the underlying device/file.
@@ -305,7 +326,8 @@ func (sb *SuperBlock) InodeSize() uint16 {
 	return 128
 }
 
-// BlockGroupCount calculates the total number of block groups in the filesystem.
+// BlockGroupCount calculates the total number of block groups in the
+// filesystem.
 func (sb *SuperBlock) BlockGroupCount() uint32 {
 	// Total blocks divided by blocks per group.
 	// We round up in case the last block group is smaller than the others.

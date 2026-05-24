@@ -5,6 +5,8 @@ import (
 	"io"
 )
 
+// The filesystem struct represents the state of a mounted ext4 filesystem. It
+// holds a reference to the underlying device (or file) and the superblock.
 type FileSystem struct {
 	// The underlying device or file representing the filesystem.
 	dev io.ReaderAt

@@ -38,25 +38,18 @@ func main() {
 		volName = "<unnamed>"
 	}
 
-	// 5. Print the "Geometry" of the filesystem
-	fmt.Println("========================================")
-	fmt.Println("         EXT4 MOUNT SUCCESSFUL          ")
-	fmt.Println("========================================")
-	fmt.Printf("Volume Name       : %s\n", volName)
-	fmt.Printf("Magic Signature   : 0x%X\n", sb.S_magic)
-	fmt.Println("------------------------------------------")
-	fmt.Printf("Mount State       : 0x%X\n", sb.S_state)
-	fmt.Printf("Error Behavior    : 0x%X\n", sb.S_errors)
-	fmt.Printf("Creator OS        : 0x%X\n", sb.S_creator_os)
-	fmt.Printf("Revision Level    : 0x%X\n", sb.S_rev_level)
-	fmt.Println("----------------------------------------")
-	fmt.Printf("Block Size        : %d bytes\n", sb.BlockSize())
-	fmt.Printf("Inode Size        : %d bytes\n", sb.InodeSize())
-	fmt.Printf("Total Blocks      : %d\n", sb.S_blocks_count_lo)
-	fmt.Printf("Total Inodes      : %d\n", sb.S_inodes_count)
-	fmt.Printf("Blocks Per Group  : %d\n", sb.S_blocks_per_group)
-	fmt.Printf("Inodes Per Group  : %d\n", sb.S_inodes_per_group)
-	fmt.Println("----------------------------------------")
-	fmt.Printf("Block Group Count : %d\n", sb.BlockGroupCount())
-	fmt.Println("========================================")
+	fmt.Printf("Mounted ext4 filesystem with volume name: %s\n", volName)
+
+	if sb.S_state != ext4.SUPERBLOCK_STATE_CLEAN {
+		fmt.Printf("Warning: Filesystem is not clean! State: 0x%04x\n", sb.S_state)
+		return
+	}
+
+	block_group_descr, err := fs.ReadGroupDescriptor(0)
+
+	if err != nil {
+		log.Fatalf("Failed to read group descriptor: %v", err)
+	}
+
+	fmt.Printf("First block group descriptor: %+v\n", block_group_descr)
 }
