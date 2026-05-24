@@ -14,7 +14,7 @@ type FileSystem struct {
 	sb *SuperBlock
 
 	// A slice of all Block Group Descriptors.
-	bgd []GroupDescriptor
+	Bgds []GroupDescriptor
 
 	BlockSize  uint64
 	InodeSize  uint16
