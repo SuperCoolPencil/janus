@@ -111,6 +111,19 @@ const (
 // If the flag is absent the inode uses the legacy indirect block scheme,
 // which we do not yet support.
 func (fs *FileSystem) ReadExtents(inode *Inode) ([]Extent, error) {
+	// Guard: the EXT4_EXTENTS_FL flag (0x80000) in I_flags tells us that
+	// I_block holds an extent tree header. Without this flag, I_block holds
+	// the legacy ext2/ext3 direct/indirect block pointer table instead.
+	// Parsing one format as the other would produce completely wrong results.
+	// We return a clear error so the caller knows exactly what happened.
+	if !inode.UsesExtents() {
+		return nil, fmt.Errorf(
+			"inode uses legacy indirect block addressing (EXT4_EXTENTS_FL not set in I_flags=0x%08x); "+
+				"indirect block scheme is not yet supported",
+			inode.I_flags,
+		)
+	}
+
 	// The 60-byte I_block field is the root of the extent tree.
 	// Parse it as a byte slice so we can share parseExtentNode with the
 	// recursive on-disk-block case.

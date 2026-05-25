@@ -216,6 +216,109 @@ func (fs *FileSystem) ReadInode(inodeNum uint32) (*Inode, error) {
 
 // ReadRootInode is just a convenient wrapper.
 func (fs *FileSystem) ReadRootInode() (*Inode, error) {
-	// In ext2/3/4, the root directory is ALWAYS Inode 2
-	return fs.ReadInode(2)
+	// In ext2/3/4, the root directory is ALWAYS Inode 2.
+	// See: https://github.com/SuperCoolPencil/janus/blob/master/docs/ext4/inodes.md
+	return fs.ReadInode(RootInodeNum)
+}
+
+// ── Inode helper methods ──────────────────────────────────────────────────────
+//
+// The I_mode field encodes two orthogonal things in a single uint16:
+//
+//   Bits 15..12  file type   (4 bits, mask 0xF000)
+//   Bits 11..0   permissions (12 bits, mask 0x0FFF)
+//
+// To check the file type you MUST mask with 0xF000 before comparing,
+// otherwise the permission bits will corrupt the comparison.
+//
+//   Example: a regular file owned by root with mode 0644 has
+//            I_mode = 0x8000 | 0x01A4 = 0x81A4
+//            0x81A4 & 0xF000 == 0x8000 == S_IFREG  ✓
+//
+// All S_IF* constants are defined above alongside the Inode struct.
+// See: https://github.com/SuperCoolPencil/janus/blob/master/docs/ext4/inodes.md
+
+// ifmt is the file-type mask for the I_mode field.
+// Applying this mask isolates the four type bits and strips permissions.
+const ifmt = 0xF000
+
+// IsDir reports whether this inode represents a directory.
+//
+// Directories are the containers that map file names to inode numbers.
+// Every path component except the last one must be a directory.
+// The root inode (number 2) is always a directory.
+//
+// On-disk: I_mode & 0xF000 == S_IFDIR (0x4000)
+func (i *Inode) IsDir() bool {
+	return i.I_mode&ifmt == S_IFDIR
+}
+
+// IsRegular reports whether this inode represents a regular file.
+//
+// Regular files hold arbitrary user data. Their contents are reached by
+// walking the extent tree (or legacy indirect block map) stored in I_block.
+// ReadFile uses this to guard against being called on a directory or device.
+//
+// On-disk: I_mode & 0xF000 == S_IFREG (0x8000)
+func (i *Inode) IsRegular() bool {
+	return i.I_mode&ifmt == S_IFREG
+}
+
+// IsSymlink reports whether this inode represents a symbolic link.
+//
+// Symbolic links store a target path string rather than file data.
+// Ext4 distinguishes between two storage strategies depending on length:
+//   - Fast symlink: target ≤ 60 bytes → stored directly in I_block[0..59]
+//     (EXT4_EXTENTS_FL is NOT set; I_size_lo holds the target length)
+//   - Slow symlink: target > 60 bytes → stored in a regular data block
+//     (EXT4_EXTENTS_FL IS set; read like a regular file)
+//
+// See docs/ext4/ifork.md for the inline data layout.
+//
+// On-disk: I_mode & 0xF000 == S_IFLNK (0xA000)
+func (i *Inode) IsSymlink() bool {
+	return i.I_mode&ifmt == S_IFLNK
+}
+
+// Size returns the complete size of the inode's data in bytes.
+//
+// The size is stored as a split 64-bit value across two fields:
+//
+//   I_size_lo   lower 32 bits  (always valid, present since ext2)
+//   I_size_high upper 32 bits  (valid for regular files on rev_level ≥ 1 filesystems)
+//
+// IMPORTANT: For directories, I_size_high is historically named i_dir_acl
+// and carries a completely different meaning (extended attribute block
+// pointer in very old ext2). To avoid misinterpreting it as a size, we
+// return only I_size_lo for directory inodes.
+//
+// See: https://github.com/SuperCoolPencil/janus/blob/master/docs/ext4/inodes.md
+func (i *Inode) Size() uint64 {
+	if i.IsDir() {
+		// Directory size is always < 4 GiB; I_size_high is repurposed
+		// for i_dir_acl in the original ext2 format and must not be
+		// treated as the upper half of the size.
+		return uint64(i.I_size_lo)
+	}
+	return (uint64(i.I_size_high) << 32) | uint64(i.I_size_lo)
+}
+
+// UsesExtents reports whether this inode's data blocks are addressed via
+// the ext4 extent tree (as opposed to the legacy ext2/ext3 indirect block
+// scheme).
+//
+// All directories and regular files created by Linux kernel 2.6.23+ have
+// this flag set. The legacy scheme exists for backwards compatibility with
+// very old filesystems that were created before extents were introduced.
+//
+// When this flag is NOT set, the 60 bytes of I_block contain up to 15
+// direct/indirect block pointers (EXT4_N_BLOCKS = 15) — a structure we
+// do not yet support. Callers should check this flag and return a clear
+// error rather than silently misparsing the data.
+//
+// On-disk: I_flags & EXT4_EXTENTS_FL (0x80000) != 0
+//
+// See docs/ext4/ifork.md for the fork (I_block) layout under both schemes.
+func (i *Inode) UsesExtents() bool {
+	return i.I_flags&EXT4_EXTENTS_FL != 0
 }

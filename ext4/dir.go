@@ -94,6 +94,16 @@ const dirEntryHeaderSize = 8
 // The caller is responsible for ensuring that `inode` is a directory
 // (i.e. inode.I_mode & S_IFDIR != 0).
 func (fs *FileSystem) ReadDir(inode *Inode) ([]DirEntry2, error) {
+	// Sanity-check: only directory inodes have DirEntry2 data blocks.
+	// Calling this on a regular file or symlink would attempt to parse
+	// arbitrary file data as directory records, producing nonsense or panics.
+	if !inode.IsDir() {
+		return nil, fmt.Errorf(
+			"ReadDir called on a non-directory inode (I_mode=0x%04x)",
+			inode.I_mode,
+		)
+	}
+
 	// Resolve the extent tree rooted in the inode's I_block field.
 	// This gives us a flat list of (logical_block → physical_block, len)
 	// extents in logical order, covering the full file.
