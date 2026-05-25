@@ -65,11 +65,29 @@ func run() error {
 	}
 
 	// Read Root Inode
+	// Inode 2 is always the root directory in ext4.
+	// See: https://github.com/SuperCoolPencil/janus/blob/master/docs/ext4/inodes.md
 	rootInode, err := fs.ReadRootInode()
 	if err != nil {
 		return fmt.Errorf("failed to read root inode: %w", err)
 	}
-	fmt.Printf("Root inode: %+v\n", rootInode)
+
+	// Read the root directory entries by walking the extent tree
+	// embedded in the root inode's I_block field and parsing the
+	// packed DirEntry2 records in each data block.
+	// See: https://github.com/SuperCoolPencil/janus/blob/master/docs/ext4/directory.md
+	entries, err := fs.ReadDir(rootInode)
+	if err != nil {
+		return fmt.Errorf("failed to read root directory: %w", err)
+	}
+
+	fmt.Printf("\nRoot directory listing (%d entries):\n", len(entries))
+	fmt.Printf("  %-6s  %-8s  %s\n", "type", "inode", "name")
+	fmt.Printf("  %-6s  %-8s  %s\n", "------", "--------", "----")
+	for _, e := range entries {
+		typeName := ext4.DirFileTypeName[e.FileType]
+		fmt.Printf("  %-6s  %-8d  %s\n", typeName, e.Inode, e.Name)
+	}
 
 	return nil
 }
