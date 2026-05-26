@@ -1,0 +1,45 @@
+version: 2
+
+project_name: janus
+
+before:
+  hooks:
+    - go mod tidy
+    - go fmt ./...
+
+builds:
+  - id: janus
+    binary: janus
+    env:
+      - CGO_ENABLED=1
+      - CGO_CFLAGS=-IC:/PROGRA~2/WinFsp/inc/fuse
+      - CGO_LDFLAGS=-LC:/PROGRA~2/WinFsp/lib -lwinfsp-x64
+    goos:
+      - windows
+    goarch:
+      - amd64
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+    
+archives:
+  - formats:
+      - zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - LICENSE*
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
