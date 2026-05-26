@@ -1,4 +1,4 @@
-package ext4
+﻿package ext4
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ func (fs *FileSystem) ReadFile(inode *Inode) ([]byte, error) {
 	// ReadDir for those. Symlinks short-circuit through ReadSymlink.
 	if !inode.IsRegular() {
 		return nil, fmt.Errorf(
-			"ReadFile: inode has I_mode=0x%04x — only regular files (S_IFREG) are supported",
+			"ReadFile: inode has I_mode=0x%04x â€” only regular files (S_IFREG) are supported",
 			inode.I_mode,
 		)
 	}
@@ -50,7 +50,7 @@ func (fs *FileSystem) ReadFile(inode *Inode) ([]byte, error) {
 		if written >= fileSize {
 			// We have already filled all bytes the inode claims to have.
 			// This is unexpected (extent tree lists more data than inode.Size)
-			// but harmless — stop processing.
+			// but harmless â€” stop processing.
 			break
 		}
 
@@ -91,7 +91,7 @@ func (fs *FileSystem) ReadFile(inode *Inode) ([]byte, error) {
 			}
 
 			// Copy as many bytes as remain in the file (the last block may be
-			// only partially filled with real data — the rest is padding).
+			// only partially filled with real data â€” the rest is padding).
 			remaining := fileSize - written
 			toCopy := fs.BlockSize
 			if toCopy > remaining {
@@ -103,4 +103,98 @@ func (fs *FileSystem) ReadFile(inode *Inode) ([]byte, error) {
 	}
 
 	return out, nil
+}
+
+// ReadFileAt reads a byte range from a file described by its pre-resolved extent
+// list, without loading the entire file into memory. This is the on-demand
+// counterpart to ReadFile â€” it reads only the disk blocks that overlap with the
+// requested [ofst, ofst+len(buf)) range.
+//
+// Returns the number of bytes read (may be less than len(buf) at EOF).
+// The caller is responsible for passing the correct extents and fileSize
+// (typically cached during Open).
+func (fs *FileSystem) ReadFileAt(extents []Extent, fileSize uint64, buf []byte, ofst int64) (int, error) {
+	if ofst < 0 || uint64(ofst) >= fileSize {
+		return 0, nil // EOF
+	}
+
+	// Clamp the read range to the file boundary.
+	start := uint64(ofst)
+	end := start + uint64(len(buf))
+	if end > fileSize {
+		end = fileSize
+	}
+	totalToRead := int(end - start)
+
+	// Pre-zero the output so sparse gaps and uninitialized extents are
+	// correct without per-byte bookkeeping.
+	for i := range buf[:totalToRead] {
+		buf[i] = 0
+	}
+
+	// Walk the extent list. Extents are in logical block order (guaranteed
+	// by ReadExtents). We track each extent's logical byte position to find
+	// overlaps with [start, end).
+	logicalPos := uint64(0)
+
+	for _, ext := range extents {
+		uninitialized := ext.EE_len&0x8000 != 0
+		blockCount := uint64(ext.EE_len & 0x7FFF)
+		extentBytes := blockCount * fs.BlockSize
+		extentEnd := logicalPos + extentBytes
+
+		// Skip extents entirely before our range.
+		if extentEnd <= start {
+			logicalPos = extentEnd
+			continue
+		}
+		// Stop once past our range.
+		if logicalPos >= end {
+			break
+		}
+
+		if uninitialized {
+			// Already zeroed above â€” just advance.
+			logicalPos = extentEnd
+			continue
+		}
+
+		physStart := (uint64(ext.EE_start_hi) << 32) | uint64(ext.EE_start_lo)
+
+		for i := uint64(0); i < blockCount; i++ {
+			blockStart := logicalPos + i*fs.BlockSize
+			blockEnd := blockStart + fs.BlockSize
+
+			if blockEnd <= start {
+				continue
+			}
+			if blockStart >= end {
+				break
+			}
+
+			// Read this physical block.
+			physBlock := physStart + i
+			blockBuf := make([]byte, fs.BlockSize)
+			if _, err := fs.dev.ReadAt(blockBuf, int64(physBlock*fs.BlockSize)); err != nil {
+				return 0, fmt.Errorf("ReadFileAt: block %d: %w", physBlock, err)
+			}
+
+			// Compute the sub-range within this block that overlaps our read.
+			srcStart := uint64(0)
+			if start > blockStart {
+				srcStart = start - blockStart
+			}
+			srcEnd := fs.BlockSize
+			if end < blockEnd {
+				srcEnd = end - blockStart
+			}
+
+			dstStart := blockStart + srcStart - start
+			copy(buf[dstStart:], blockBuf[srcStart:srcEnd])
+		}
+
+		logicalPos = extentEnd
+	}
+
+	return totalToRead, nil
 }

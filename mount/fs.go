@@ -12,11 +12,17 @@ import (
 	"github.com/winfsp/cgofuse/fuse"
 )
 
+type openFile struct {
+	extents []ext4.Extent
+	size    uint64
+	empty   bool // True for device nodes, sockets, etc.
+}
+
 // JanusFS implements fuse.FileSystemInterface for a read-only ext4 partition.
 type JanusFS struct {
 	fuse.FileSystemBase
 	ext4        *ext4.FileSystem
-	fileHandles HandleTable[[]byte]
+	fileHandles HandleTable[openFile]
 	dirHandles  HandleTable[[]ext4.DirEntry2]
 }
 
@@ -102,7 +108,7 @@ func (j *JanusFS) Opendir(path string) (int, uint64) {
 		return -fuse.ENOTDIR, 0
 	}
 
-	entries, err := j.ext4.ReadDir(inode)
+	entries, err := j.ext4.ReadDirCached(inode)
 	if err != nil {
 		log.Printf("[FUSE] Opendir(%q) ERROR ReadDir: %v", path, err)
 		return -fuse.EIO, 0
@@ -175,36 +181,45 @@ func (j *JanusFS) Open(path string, flags int) (int, uint64) {
 
 	if !inode.IsRegular() {
 		// Device nodes, FIFOs, sockets — serve as empty files.
-		fh := j.fileHandles.Store([]byte{})
+		fh := j.fileHandles.Store(openFile{empty: true})
 		log.Printf("[FUSE] Open(%q) OK (non-regular, mode=0%o) fh=%d", path, inode.I_mode, fh)
 		return 0, fh
 	}
 
-	data, err := j.ext4.ReadFile(inode)
+	extents, err := j.ext4.ReadExtents(inode)
 	if err != nil {
-		log.Printf("[FUSE] Open(%q) ERROR ReadFile: %v", path, err)
+		log.Printf("[FUSE] Open(%q) ERROR ReadExtents: %v", path, err)
 		return -fuse.EIO, 0
 	}
 
-	fh := j.fileHandles.Store(data)
-	log.Printf("[FUSE] Open(%q) OK — fh=%d size=%d bytes", path, fh, len(data))
+	fh := j.fileHandles.Store(openFile{
+		extents: extents,
+		size:    inode.Size(),
+	})
+	log.Printf("[FUSE] Open(%q) OK — fh=%d size=%d bytes", path, fh, inode.Size())
 	return 0, fh
 }
 
 // Read copies bytes from a cached file into the caller's buffer.
 func (j *JanusFS) Read(path string, buff []byte, ofst int64, fh uint64) int {
-	data, ok := j.fileHandles.Load(fh)
+	f, ok := j.fileHandles.Load(fh)
 	if !ok {
 		log.Printf("[FUSE] Read(%q) fh=%d → EBADF", path, fh)
 		return -fuse.EBADF
 	}
 
-	if ofst < 0 || int(ofst) >= len(data) {
+	if f.empty || ofst < 0 || uint64(ofst) >= f.size {
 		return 0 // EOF
 	}
 
-	n := copy(buff, data[ofst:])
-	log.Printf("[FUSE] Read(%q) fh=%d ofst=%d n=%d", path, fh, ofst, n)
+	n, err := j.ext4.ReadFileAt(f.extents, f.size, buff, ofst)
+	if err != nil {
+		log.Printf("[FUSE] Read(%q) ERROR: %v", path, err)
+		return -fuse.EIO
+	}
+
+	// We only log reads sporadically or skip logging normal reads entirely
+	// to avoid spamming the console when Explorer reads in 4KB chunks.
 	return n
 }
 

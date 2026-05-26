@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"sync"
 )
 
 // ErrNotExist is the sentinel error returned by Lookup and Walk when a path
@@ -85,6 +86,12 @@ type FileSystem struct {
 	//
 	// See: https://github.com/SuperCoolPencil/janus/blob/master/docs/ext4/group_descr.md
 	DescSize uint16
+
+	// dirCache caches directory entry listings keyed by inode's I_block.
+	// This avoids re-reading the same directory blocks from disk on every
+	// Lookup or Getattr call — Explorer calls Getattr on every file in a
+	// directory, and each one triggers a full ReadDir without this cache.
+	dirCache sync.Map
 }
 
 // NewFileSystem creates a FileSystem backed by the given io.ReaderAt.

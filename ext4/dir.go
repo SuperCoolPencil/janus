@@ -192,11 +192,27 @@ func (fs *FileSystem) ReadDir(inode *Inode) ([]DirEntry2, error) {
 	return entries, nil
 }
 
+// ReadDirCached is like ReadDir but caches the result by the directory's
+// inode number (using I_block as a proxy key). Subsequent calls for the
+// same directory return the cached slice without touching the disk.
+func (fs *FileSystem) ReadDirCached(inode *Inode) ([]DirEntry2, error) {
+	key := inode.I_block
+	if cached, ok := fs.dirCache.Load(key); ok {
+		return cached.([]DirEntry2), nil
+	}
+	entries, err := fs.ReadDir(inode)
+	if err != nil {
+		return nil, err
+	}
+	fs.dirCache.Store(key, entries)
+	return entries, nil
+}
+
 // Lookup searches dirInode for a directory entry whose name matches the given
 // string, and returns the inode number of the matched entry.
 // It returns ErrNotExist if the entry is not found.
 func (fs *FileSystem) Lookup(dirInode *Inode, name string) (uint32, error) {
-	entries, err := fs.ReadDir(dirInode)
+	entries, err := fs.ReadDirCached(dirInode)
 	if err != nil {
 		return 0, fmt.Errorf("Lookup(%q): failed to read directory: %w", name, err)
 	}
