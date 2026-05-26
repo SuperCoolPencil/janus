@@ -172,7 +172,10 @@ func (fs *FileSystem) ReadDir(inode *Inode) ([]DirEntry2, error) {
 				)
 			}
 
-			var (blockEntries []DirEntry2; parseErr error)
+			var (
+				blockEntries []DirEntry2
+				parseErr     error
+			)
 			if isHtree && logicalBlock == 0 {
 				// Block 0 of an htree directory: extract only . and ..
 				// The rest of the block is the dx_root index structure.
@@ -229,11 +232,11 @@ func (fs *FileSystem) Lookup(dirInode *Inode, name string) (uint32, error) {
 //
 // Layout of block 0 in an htree directory:
 //
-//	[0..11]  . entry   (DirEntry2, inode = dir itself, rec_len = 12)
-//	[12..23] .. entry  (DirEntry2, inode = parent dir, rec_len = 12)
-//	[24..]   dx_root info header + dx_entry[] hash index records
-//             (disguised as a single DirEntry2 with inode=0 and
-//              rec_len spanning the rest of the block)
+//		[0..11]  . entry   (DirEntry2, inode = dir itself, rec_len = 12)
+//		[12..23] .. entry  (DirEntry2, inode = parent dir, rec_len = 12)
+//		[24..]   dx_root info header + dx_entry[] hash index records
+//	            (disguised as a single DirEntry2 with inode=0 and
+//	             rec_len spanning the rest of the block)
 //
 // We read exactly two entries from the start of the block and stop,
 // discarding the rest (the B-tree index data we don't need to follow).

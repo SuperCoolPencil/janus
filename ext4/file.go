@@ -1,4 +1,4 @@
-﻿package ext4
+package ext4
 
 import (
 	"fmt"
