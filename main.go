@@ -259,19 +259,24 @@ func runMount() error {
 	janusFS := mount.NewJanusFS(fs)
 	host := fuse.NewFileSystemHost(janusFS)
 
-	// Mount options: volname sets the drive label in Explorer.
+	// Mount options:
+	//   uid=-1,gid=-1  — present all files as owned by the calling user,
+	//                    so any Windows account can access the mount.
+	//   volname=       — sets the drive label shown in Explorer.
 	mountArgs := []string{
-		"-o", fmt.Sprintf("volname=%s", volName),
+		"-o", fmt.Sprintf("uid=-1,gid=-1,volname=%s", volName),
 	}
 	fmt.Printf("Mount args: %v\n", mountArgs)
 
-	fmt.Printf("\nMounting at %s … (press Ctrl+C or right-click → Eject to unmount)\n\n", mountPoint)
+	fmt.Printf("\nMounting at %s … (press Ctrl+C or right-click → Eject to unmount)\n", mountPoint)
+	fmt.Println("Tip: to make this drive visible to ALL users, launch with: psexec -i -s janus.exe mount ...")
+	fmt.Println()
 
 	// host.Mount blocks until the filesystem is unmounted. This is by design —
 	// janus must remain alive to service VFS requests from the kernel.
 	ok := host.Mount(mountPoint, mountArgs)
 	if !ok {
-		return fmt.Errorf("mount failed — ensure WinFsp is installed (https://winfsp.dev) and janus is running as Administrator")
+		return fmt.Errorf("mount failed — ensure WinFsp is installed (https://winfsp.dev) and janus is running as Administrator\nFor all-user visibility, run as SYSTEM: psexec -i -s janus.exe mount ...")
 	}
 
 	fmt.Println("Unmounted successfully.")
