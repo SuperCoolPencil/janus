@@ -284,8 +284,8 @@ func (i *Inode) IsSymlink() bool {
 //
 // The size is stored as a split 64-bit value across two fields:
 //
-//   I_size_lo   lower 32 bits  (always valid, present since ext2)
-//   I_size_high upper 32 bits  (valid for regular files on rev_level ≥ 1 filesystems)
+//	I_size_lo   lower 32 bits  (always valid, present since ext2)
+//	I_size_high upper 32 bits  (valid for regular files on rev_level ≥ 1 filesystems)
 //
 // IMPORTANT: For directories, I_size_high is historically named i_dir_acl
 // and carries a completely different meaning (extended attribute block

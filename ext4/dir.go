@@ -151,6 +151,22 @@ func (fs *FileSystem) ReadDir(inode *Inode) ([]DirEntry2, error) {
 	return entries, nil
 }
 
+// Lookup searches dirInode for a directory entry whose name matches the given
+// string, and returns the inode number of the matched entry.
+// It returns ErrNotExist if the entry is not found.
+func (fs *FileSystem) Lookup(dirInode *Inode, name string) (uint32, error) {
+	entries, err := fs.ReadDir(dirInode)
+	if err != nil {
+		return 0, fmt.Errorf("Lookup(%q): failed to read directory: %w", name, err)
+	}
+	for _, e := range entries {
+		if e.Name == name {
+			return e.Inode, nil
+		}
+	}
+	return 0, ErrNotExist
+}
+
 // parseDirBlock walks the packed DirEntry2 records inside a single raw
 // directory block. It uses rec_len as the stride so it handles both
 // active entries and the padded-to-end-of-block tail correctly.
