@@ -1,4 +1,4 @@
-# 2.3. Special inodes — The Linux Kernel  documentation
+# 2.3. Special inodes - The Linux Kernel  documentation
 
 [![Logo](https://docs.kernel.org/_static/logo.svg)](https://docs.kernel.org/index.md)
 

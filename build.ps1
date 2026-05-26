@@ -13,8 +13,8 @@
 # confuse the gcc command-line argument parser on Windows.
 #
 # Usage:
-#   .\build.ps1            — build janus.exe
-#   .\build.ps1 -Run       — build and print usage
+#   .\build.ps1            - build janus.exe
+#   .\build.ps1 -Run       - build and print usage
 
 param(
     [switch]$Run

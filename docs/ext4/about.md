@@ -1,4 +1,4 @@
-# 1. About this Book — The Linux Kernel  documentation
+# 1. About this Book - The Linux Kernel  documentation
 
 [![Logo](https://docs.kernel.org/_static/logo.svg)](https://docs.kernel.org/index.md)
 

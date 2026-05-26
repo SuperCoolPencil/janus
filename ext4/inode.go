@@ -312,7 +312,7 @@ func (i *Inode) Size() uint64 {
 // very old filesystems that were created before extents were introduced.
 //
 // When this flag is NOT set, the 60 bytes of I_block contain up to 15
-// direct/indirect block pointers (EXT4_N_BLOCKS = 15) — a structure we
+// direct/indirect block pointers (EXT4_N_BLOCKS = 15) - a structure we
 // do not yet support. Callers should check this flag and return a clear
 // error rather than silently misparsing the data.
 //

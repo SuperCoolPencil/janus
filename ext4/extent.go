@@ -25,21 +25,21 @@ import (
 //   │     EH_depth      = 0 at leaf nodes, >0 at interior nodes
 //   │     EH_generation = snapshot generation (we ignore this)
 //   │
-//   ├── [EH_depth == 0] Extent  × EH_entries   (leaf node — physical blocks)
-//   └── [EH_depth >  0] ExtentIdx × EH_entries  (interior node — child blocks)
+//   ├── [EH_depth == 0] Extent  × EH_entries   (leaf node - physical blocks)
+//   └── [EH_depth >  0] ExtentIdx × EH_entries  (interior node - child blocks)
 //
 // See docs: https://github.com/SuperCoolPencil/janus/blob/master/docs/ext4/extent_allocation.md
 
 // ExtentHeader is the 12-byte header present at the start of every extent
-// tree node — both the inline node in the inode and any on-disk index blocks.
+// tree node - both the inline node in the inode and any on-disk index blocks.
 //
 // On-disk layout:
 //
-//	0x0  __le16  EH_magic      — must be 0xF30A (EXT4_EXT_MAGIC)
-//	0x2  __le16  EH_entries    — number of valid entries following this header
-//	0x4  __le16  EH_max        — maximum entries that fit in this node
-//	0x6  __le16  EH_depth      — 0 = leaf (Extent entries), >0 = interior (ExtentIdx entries)
-//	0x8  __le32  EH_generation — snapshot generation (unused here)
+//	0x0  __le16  EH_magic      - must be 0xF30A (EXT4_EXT_MAGIC)
+//	0x2  __le16  EH_entries    - number of valid entries following this header
+//	0x4  __le16  EH_max        - maximum entries that fit in this node
+//	0x6  __le16  EH_depth      - 0 = leaf (Extent entries), >0 = interior (ExtentIdx entries)
+//	0x8  __le32  EH_generation - snapshot generation (unused here)
 type ExtentHeader struct {
 	EH_magic      uint16
 	EH_entries    uint16
@@ -53,10 +53,10 @@ type ExtentHeader struct {
 //
 // On-disk layout (12 bytes):
 //
-//	0x0  __le32  EE_block     — first logical block number covered by this extent
-//	0x4  __le16  EE_len       — number of blocks in the run (max 32768)
-//	0x6  __le16  EE_start_hi  — high 16 bits of the starting physical block number
-//	0x8  __le32  EE_start_lo  — low 32 bits of the starting physical block number
+//	0x0  __le32  EE_block     - first logical block number covered by this extent
+//	0x4  __le16  EE_len       - number of blocks in the run (max 32768)
+//	0x6  __le16  EE_start_hi  - high 16 bits of the starting physical block number
+//	0x8  __le32  EE_start_lo  - low 32 bits of the starting physical block number
 //
 // The full 48-bit physical start is: (EE_start_hi << 32) | EE_start_lo
 type Extent struct {
@@ -72,9 +72,9 @@ type Extent struct {
 //
 // On-disk layout (12 bytes):
 //
-//	0x0  __le32  EI_block   — first logical block number covered by the subtree
-//	0x4  __le32  EI_leaf_lo — low 32 bits of the physical block holding the child node
-//	0x8  __le16  EI_leaf_hi — high 16 bits of the physical block holding the child node
+//	0x0  __le32  EI_block   - first logical block number covered by the subtree
+//	0x4  __le32  EI_leaf_lo - low 32 bits of the physical block holding the child node
+//	0x8  __le16  EI_leaf_hi - high 16 bits of the physical block holding the child node
 //	0xA  __u16   EI_unused
 //
 // The full 48-bit child block is: (EI_leaf_hi << 32) | EI_leaf_lo
@@ -101,12 +101,12 @@ const (
 // all leaf Extent records in logical block order.
 //
 // For most small files and all small directories (including the root
-// directory) the tree has depth 0 and fits entirely inside the inode — no
+// directory) the tree has depth 0 and fits entirely inside the inode - no
 // additional disk reads are needed. For larger or more fragmented files the
 // tree can be up to 5 levels deep; each interior node is stored in one full
 // filesystem block.
 //
-// The inode MUST have the EXT4_EXTENTS_FL flag set (0x80000) — this is
+// The inode MUST have the EXT4_EXTENTS_FL flag set (0x80000) - this is
 // always true for directories and for files created by modern kernels.
 // If the flag is absent the inode uses the legacy indirect block scheme,
 // which we do not yet support.
@@ -186,7 +186,7 @@ func (fs *FileSystem) parseExtentNode(data []byte) ([]Extent, error) {
 			)
 		}
 
-		// Recurse — the child may itself be an interior node or a leaf.
+		// Recurse - the child may itself be an interior node or a leaf.
 		childExtents, err := fs.parseExtentNode(childBuf)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse child extent node at block %d: %w", childBlock, err)

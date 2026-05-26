@@ -11,7 +11,7 @@ func (fs *FileSystem) ReadFile(inode *Inode) ([]byte, error) {
 	// ReadDir for those. Symlinks short-circuit through ReadSymlink.
 	if !inode.IsRegular() {
 		return nil, fmt.Errorf(
-			"ReadFile: inode has I_mode=0x%04x â€” only regular files (S_IFREG) are supported",
+			"ReadFile: inode has I_mode=0x%04x - only regular files (S_IFREG) are supported",
 			inode.I_mode,
 		)
 	}
@@ -50,7 +50,7 @@ func (fs *FileSystem) ReadFile(inode *Inode) ([]byte, error) {
 		if written >= fileSize {
 			// We have already filled all bytes the inode claims to have.
 			// This is unexpected (extent tree lists more data than inode.Size)
-			// but harmless â€” stop processing.
+			// but harmless - stop processing.
 			break
 		}
 
@@ -91,7 +91,7 @@ func (fs *FileSystem) ReadFile(inode *Inode) ([]byte, error) {
 			}
 
 			// Copy as many bytes as remain in the file (the last block may be
-			// only partially filled with real data â€” the rest is padding).
+			// only partially filled with real data - the rest is padding).
 			remaining := fileSize - written
 			toCopy := fs.BlockSize
 			if toCopy > remaining {
@@ -107,7 +107,7 @@ func (fs *FileSystem) ReadFile(inode *Inode) ([]byte, error) {
 
 // ReadFileAt reads a byte range from a file described by its pre-resolved extent
 // list, without loading the entire file into memory. This is the on-demand
-// counterpart to ReadFile â€” it reads only the disk blocks that overlap with the
+// counterpart to ReadFile - it reads only the disk blocks that overlap with the
 // requested [ofst, ofst+len(buf)) range.
 //
 // Returns the number of bytes read (may be less than len(buf) at EOF).
@@ -154,7 +154,7 @@ func (fs *FileSystem) ReadFileAt(extents []Extent, fileSize uint64, buf []byte, 
 		}
 
 		if uninitialized {
-			// Already zeroed above â€” just advance.
+			// Already zeroed above - just advance.
 			logicalPos = extentEnd
 			continue
 		}

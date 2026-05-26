@@ -37,12 +37,12 @@ func NewJanusFS(fs *ext4.FileSystem) *JanusFS {
 // Init is called once by WinFsp immediately after the filesystem is mounted.
 // This is our first chance to log that the FUSE callbacks are live.
 func (j *JanusFS) Init() {
-	log.Printf("[FUSE] Init() — filesystem is live, WinFsp handshake complete")
+	log.Printf("[FUSE] Init() - filesystem is live, WinFsp handshake complete")
 }
 
 // Destroy is called once when the filesystem is unmounted.
 func (j *JanusFS) Destroy() {
-	log.Printf("[FUSE] Destroy() — filesystem unmounted")
+	log.Printf("[FUSE] Destroy() - filesystem unmounted")
 }
 
 // Filesystem metadata
@@ -51,7 +51,7 @@ func (j *JanusFS) Destroy() {
 func (j *JanusFS) Statfs(path string, stat *fuse.Statfs_t) int {
 	sb, err := j.ext4.Superblock()
 	if err != nil {
-		log.Printf("[FUSE] Statfs(%q) ERROR — superblock not ready: %v", path, err)
+		log.Printf("[FUSE] Statfs(%q) ERROR - superblock not ready: %v", path, err)
 		return -fuse.EIO
 	}
 
@@ -65,7 +65,7 @@ func (j *JanusFS) Statfs(path string, stat *fuse.Statfs_t) int {
 	stat.Favail = stat.Ffree
 	stat.Namemax = 255
 
-	log.Printf("[FUSE] Statfs(%q) OK — bsize=%d blocks=%d bfree=%d",
+	log.Printf("[FUSE] Statfs(%q) OK - bsize=%d blocks=%d bfree=%d",
 		path, stat.Bsize, stat.Blocks, stat.Bfree)
 	return 0
 }
@@ -85,7 +85,7 @@ func (j *JanusFS) Getattr(path string, stat *fuse.Stat_t, fh uint64) int {
 	}
 
 	inodeToStat(inode, stat)
-	log.Printf("[FUSE] Getattr(%q) OK — mode=0%o size=%d", path, stat.Mode, stat.Size)
+	log.Printf("[FUSE] Getattr(%q) OK - mode=0%o size=%d", path, stat.Mode, stat.Size)
 	return 0
 }
 
@@ -115,7 +115,7 @@ func (j *JanusFS) Opendir(path string) (int, uint64) {
 	}
 
 	fh := j.dirHandles.Store(entries)
-	log.Printf("[FUSE] Opendir(%q) OK — fh=%d entries=%d", path, fh, len(entries))
+	log.Printf("[FUSE] Opendir(%q) OK - fh=%d entries=%d", path, fh, len(entries))
 	return 0, fh
 }
 
@@ -131,7 +131,7 @@ func (j *JanusFS) Readdir(path string,
 		return -fuse.EBADF
 	}
 
-	log.Printf("[FUSE] Readdir(%q) fh=%d — filling %d entries", path, fh, len(entries))
+	log.Printf("[FUSE] Readdir(%q) fh=%d - filling %d entries", path, fh, len(entries))
 	for i := range entries {
 		e := &entries[i]
 
@@ -141,12 +141,12 @@ func (j *JanusFS) Readdir(path string,
 			inodeToStat(inode, &s)
 			statPtr = &s
 		} else {
-			log.Printf("[FUSE] Readdir(%q) — ReadInode(%d) failed for %q: %v",
+			log.Printf("[FUSE] Readdir(%q) - ReadInode(%d) failed for %q: %v",
 				path, e.Inode, e.Name, err)
 		}
 
 		if !fill(e.Name, statPtr, 0) {
-			log.Printf("[FUSE] Readdir(%q) — fill() returned false at entry %q (buffer full)", path, e.Name)
+			log.Printf("[FUSE] Readdir(%q) - fill() returned false at entry %q (buffer full)", path, e.Name)
 			break
 		}
 	}
@@ -180,7 +180,7 @@ func (j *JanusFS) Open(path string, flags int) (int, uint64) {
 	}
 
 	if !inode.IsRegular() {
-		// Device nodes, FIFOs, sockets — serve as empty files.
+		// Device nodes, FIFOs, sockets - serve as empty files.
 		fh := j.fileHandles.Store(openFile{empty: true})
 		log.Printf("[FUSE] Open(%q) OK (non-regular, mode=0%o) fh=%d", path, inode.I_mode, fh)
 		return 0, fh
@@ -196,7 +196,7 @@ func (j *JanusFS) Open(path string, flags int) (int, uint64) {
 		extents: extents,
 		size:    inode.Size(),
 	})
-	log.Printf("[FUSE] Open(%q) OK — fh=%d size=%d bytes", path, fh, inode.Size())
+	log.Printf("[FUSE] Open(%q) OK - fh=%d size=%d bytes", path, fh, inode.Size())
 	return 0, fh
 }
 
@@ -259,7 +259,7 @@ func (j *JanusFS) Readlink(path string) (int, string) {
 	return 0, target
 }
 
-// Write stubs — always return EROFS
+// Write stubs - always return EROFS
 // All write operations are rejected with EROFS.
 
 func (j *JanusFS) Write(path string, buff []byte, ofst int64, fh uint64) int {
@@ -308,7 +308,7 @@ func (j *JanusFS) Link(oldpath string, newpath string) int {
 //
 // Permission handling: ext4 stores Unix owner/group/other permission bits.
 // Directories like /home/meet are typically mode 0700 (owner-only). On
-// Windows these bits are meaningless, but WinFsp enforces them — blocking
+// Windows these bits are meaningless, but WinFsp enforces them - blocking
 // access entirely for the current user if the "other" bits are empty.
 //
 // Since janus is a read-only mount, we force read access for all users on

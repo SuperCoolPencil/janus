@@ -1,4 +1,4 @@
-# ext4 Data Structures and Algorithms — The Linux Kernel  documentation
+# ext4 Data Structures and Algorithms - The Linux Kernel  documentation
 
 [![Logo](https://docs.kernel.org/_static/logo.svg)](https://docs.kernel.org/index.md)
 

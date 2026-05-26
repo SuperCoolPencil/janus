@@ -1,4 +1,4 @@
-# 4.4. Extended Attributes — The Linux Kernel  documentation
+# 4.4. Extended Attributes - The Linux Kernel  documentation
 
 [![Logo](https://docs.kernel.org/_static/logo.svg)](https://docs.kernel.org/index.md)
 

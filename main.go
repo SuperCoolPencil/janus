@@ -3,10 +3,10 @@ package main
 // main.go is the entry point for the janus CLI. It dispatches between four
 // operating modes based on command-line arguments:
 //
-//	janus                              — dev mode: open testfs.img directly
-//	janus <device> [<partNum>]         — list partitions, or read one partition's root dir
-//	janus devices                      — list all physical disks (Windows: \\.\PhysicalDriveN)
-//	janus mount <letter> <disk> <part> — mount partition as a drive letter via WinFsp
+//	janus                              - dev mode: open testfs.img directly
+//	janus <device> [<partNum>]         - list partitions, or read one partition's root dir
+//	janus devices                      - list all physical disks (Windows: \\.\PhysicalDriveN)
+//	janus mount <letter> <disk> <part> - mount partition as a drive letter via WinFsp
 //
 // The dev / list / read modes are carryovers from the initial development phase
 // and remain useful for debugging. The mount mode is the production use case.
@@ -210,7 +210,7 @@ func runMount() error {
 
 	if target.Type != disk.TypeLinuxData {
 		return fmt.Errorf(
-			"partition %d is %q — janus only supports Linux ext4 partitions",
+			"partition %d is %q - janus only supports Linux ext4 partitions",
 			partNum, target.Type,
 		)
 	}
@@ -236,7 +236,7 @@ func runMount() error {
 
 	volName := string(bytes.Trim(sb.S_volume_name[:], "\x00"))
 	if volName == "" {
-		// Use a plain fallback — angle brackets like <unnamed> are treated as
+		// Use a plain fallback - angle brackets like <unnamed> are treated as
 		// argument delimiters by WinFsp's option parser and will break the
 		// volname= option, causing the drive letter to silently not appear.
 		volName = "ext4"
@@ -249,7 +249,7 @@ func runMount() error {
 	// Only mount clean filesystems. Journal replay is not yet supported.
 	if sb.S_state != ext4.SUPERBLOCK_STATE_CLEAN {
 		return fmt.Errorf(
-			"filesystem is not clean (state=0x%04x) — unmount it cleanly on Linux before mounting with janus",
+			"filesystem is not clean (state=0x%04x) - unmount it cleanly on Linux before mounting with janus",
 			sb.S_state,
 		)
 	}
@@ -264,9 +264,9 @@ func runMount() error {
 	host := fuse.NewFileSystemHost(janusFS)
 
 	// Mount options:
-	//   uid=-1,gid=-1  — present all files as owned by the calling user,
+	//   uid=-1,gid=-1  - present all files as owned by the calling user,
 	//                    so any Windows account can access the mount.
-	//   volname=       — sets the drive label shown in Explorer.
+	//   volname=       - sets the drive label shown in Explorer.
 	mountArgs := []string{
 		"-o", fmt.Sprintf("uid=-1,gid=-1,volname=%s", volName),
 	}
@@ -276,11 +276,11 @@ func runMount() error {
 	fmt.Println("Tip: to make this drive visible to ALL users, launch with: psexec -i -s janus.exe mount ...")
 	fmt.Println()
 
-	// host.Mount blocks until the filesystem is unmounted. This is by design —
+	// host.Mount blocks until the filesystem is unmounted. This is by design -
 	// janus must remain alive to service VFS requests from the kernel.
 	ok := host.Mount(mountPoint, mountArgs)
 	if !ok {
-		return fmt.Errorf("mount failed — ensure WinFsp is installed (https://winfsp.dev) and janus is running as Administrator\nFor all-user visibility, run as SYSTEM: psexec -i -s janus.exe mount ...")
+		return fmt.Errorf("mount failed - ensure WinFsp is installed (https://winfsp.dev) and janus is running as Administrator\nFor all-user visibility, run as SYSTEM: psexec -i -s janus.exe mount ...")
 	}
 
 	fmt.Println("Unmounted successfully.")
@@ -290,7 +290,7 @@ func runMount() error {
 // Mode: raw image
 
 // runImageMode opens "testfs.img" directly as a bare ext4 filesystem image.
-// This is the development mode used while building the parser — the image
+// This is the development mode used while building the parser - the image
 // has no partition table; it IS the filesystem.
 func runImageMode() error {
 	file, err := os.Open("testfs.img")
@@ -316,7 +316,7 @@ func runImageMode() error {
 //
 //	\\.\PhysicalDrive0, \\.\PhysicalDrive1
 //
-// The function only reads from the device — it never writes.
+// The function only reads from the device - it never writes.
 func runListPartitions(devicePath string) error {
 	f, err := os.Open(devicePath)
 	if err != nil {
@@ -353,7 +353,7 @@ func runListPartitions(devicePath string) error {
 //
 // The partition is opened via a PartitionReader, which confines all reads to
 // the byte range of that partition. The ext4 package receives an io.ReaderAt
-// whose offset 0 corresponds to the partition's first byte — it has no
+// whose offset 0 corresponds to the partition's first byte - it has no
 // knowledge of the physical disk layout or other partitions.
 func runReadPartition(devicePath string, partNum int) error {
 	f, err := os.Open(devicePath)
@@ -382,7 +382,7 @@ func runReadPartition(devicePath string, partNum int) error {
 
 	if target.Type != disk.TypeLinuxData {
 		return fmt.Errorf(
-			"partition %d is %q, not a Linux filesystem — janus only supports ext4",
+			"partition %d is %q, not a Linux filesystem - janus only supports ext4",
 			partNum, target.Type,
 		)
 	}
@@ -432,7 +432,7 @@ func readExt4(dev interface {
 
 	// Only support clean filesystems for now.
 	if sb.S_state != ext4.SUPERBLOCK_STATE_CLEAN {
-		fmt.Printf("Warning: filesystem is not clean (state=0x%04x) — aborting\n", sb.S_state)
+		fmt.Printf("Warning: filesystem is not clean (state=0x%04x) - aborting\n", sb.S_state)
 		return nil
 	}
 
@@ -476,10 +476,10 @@ func truncate(s string, n int) string {
 // sanitizeVolName replaces characters that WinFsp's FUSE option parser cannot
 // handle inside a volname= value. The problematic characters are:
 //
-//	< >  — treated as XML/argument delimiters
-//	"    — closes the quoted string in WinFsp's option tokenizer
-//	,    — separates comma-delimited option values
-//	' '  — separates option tokens
+//	< >  - treated as XML/argument delimiters
+//	"    - closes the quoted string in WinFsp's option tokenizer
+//	,    - separates comma-delimited option values
+//	' '  - separates option tokens
 //
 // We replace any of these with an underscore so the volname= option is always
 // a single, unambiguous token that WinFsp can parse safely.

@@ -1,6 +1,6 @@
 # Understanding Ext4 Disk Layout, Part 2
 
-> **Source:** [Oracle Linux Blog — Understanding Ext4 Disk Layout, Part 2](https://blogs.oracle.com/linux/post/understanding-ext4-disk-layout-part-2)
+> **Source:** [Oracle Linux Blog - Understanding Ext4 Disk Layout, Part 2](https://blogs.oracle.com/linux/post/understanding-ext4-disk-layout-part-2)
 > **Author:** Srivathsa Dara · August 8, 2023
 
 This document is the second in a series covering Ext4 internals. Part 1 covered the Superblock, GDT, Bitmaps, and Inode Table. Here we focus on the **on-disk structures** of the extent tree, hash tree, and their associated data structures.
@@ -138,7 +138,7 @@ The `ext4_extent_idx` in the example points to physical block `0x85ca`. Examinin
 - The first 12 bytes are again an extent header (`eh_depth = 0`, `eh_max = 340`).
   - `eh_max = 340` because: `(4096 - 12 [header] - 4 [ext4_extent_tail]) / 12 [bytes per extent] = 340`.
 - Since `depth == 0`, the subsequent entries are `ext4_extent` structures.
-- `eh_entries = 182` — so 182 extents follow.
+- `eh_entries = 182` - so 182 extents follow.
 
 **First three extents from the example:**
 
@@ -163,7 +163,7 @@ Level Entries   Logical              Physical  Length  Flags
 
 | Depth | Structure within `i_block` | Indirection |
 |---|---|---|
-| 0 | `ext4_extent_header` + up to 4 × `ext4_extent` | None — extents point directly to data blocks |
+| 0 | `ext4_extent_header` + up to 4 × `ext4_extent` | None - extents point directly to data blocks |
 | 1 | `ext4_extent_header` + up to 4 × `ext4_extent_idx` | One intermediate block between `i_block` and data |
 | 2 | `ext4_extent_header` + up to 4 × `ext4_extent_idx` | Two intermediate blocks |
 
@@ -181,9 +181,9 @@ A **directory** stores dirents (directory entries) of all its files in its data 
 - **Indexed mode (HTree):** Once dirents overflow a single block and the hash tree feature is enabled, the directory is converted to an indexed tree.
 
 The hash tree consists of:
-- **Root node** — holds tree metadata (depth, hash algorithm).
-- **Intermediate nodes** — act as branches, directing search based on hash values.
-- **Leaf nodes** — hold the actual `ext4_dir_entry_2` structures.
+- **Root node** - holds tree metadata (depth, hash algorithm).
+- **Intermediate nodes** - act as branches, directing search based on hash values.
+- **Leaf nodes** - hold the actual `ext4_dir_entry_2` structures.
 
 ### `ext4_dir_entry_2`
 
@@ -295,11 +295,11 @@ When `dx_root.info.indirect_levels > 0`, there are intermediate blocks between t
 
 Each dirent in a leaf block has:
 
-1. **4 bytes** — Inode number
-2. **2 bytes** — `rec_len` (record length; the last dirent's `rec_len` spans to the end of the block)
-3. **1 byte** — `name_len`
-4. **1 byte** — `file_type`
-5. **`name_len` bytes** — file name
+1. **4 bytes** - Inode number
+2. **2 bytes** - `rec_len` (record length; the last dirent's `rec_len` spans to the end of the block)
+3. **1 byte** - `name_len`
+4. **1 byte** - `file_type`
+5. **`name_len` bytes** - file name
 
 ---
 
@@ -312,7 +312,7 @@ Initially a directory is unindexed (linear list of dirents in a single block). W
 1. Two new blocks are created.
 2. One becomes the root block (initialized with `dx_root`).
 3. The existing dirents are sorted by hash and split 50/50: the first half stays in the original block, the second half moves to the new block.
-4. Two `dx_entry` structures are added to `dx_root` — one with hash `0` (pointing to the first block) and one with the hash of the first dirent in the second block.
+4. Two `dx_entry` structures are added to `dx_root` - one with hash `0` (pointing to the first block) and one with the hash of the first dirent in the second block.
 
 ### Growth After Conversion
 
@@ -367,7 +367,7 @@ Both structures share the same general pattern: a header at the root of `i_block
 
 ## References
 
-- Kernel code `fs/ext4/` — 5.4.17-2136.310.7.1.el8uek.x86_64
+- Kernel code `fs/ext4/` - 5.4.17-2136.310.7.1.el8uek.x86_64
 - <https://www.kernel.org/doc/html/latest/filesystems/ext4/>
 - <https://www.sans.org/blog/understanding-ext4-part-3-extent-trees/>
 - <https://www.sans.org/blog/understanding-ext4-part-6-directories/>

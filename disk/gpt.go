@@ -8,12 +8,12 @@ import (
 	"unicode/utf16"
 )
 
-// GPT — GUID Partition Table
+// GPT - GUID Partition Table
 //
 // A GPT-partitioned disk has the following layout (each LBA is one sector,
 // typically 512 bytes):
 //
-//	LBA 0:      Protective MBR  — a fake MBR with one type-0xEE entry
+//	LBA 0:      Protective MBR  - a fake MBR with one type-0xEE entry
 //	                              spanning the whole disk. Prevents old
 //	                              MBR-only tools from treating the disk
 //	                              as unpartitioned and overwriting it.
@@ -121,37 +121,37 @@ var (
 		0x8E, 0x79, 0x3D, 0x69, 0xD8, 0x47, 0x7D, 0xE4,
 	}
 
-	// gptTypeLinuxSwap — String: 0657FD6D-A4AB-43C4-84E5-0933C84B4F4F
+	// gptTypeLinuxSwap - String: 0657FD6D-A4AB-43C4-84E5-0933C84B4F4F
 	gptTypeLinuxSwap = [16]byte{
 		0x6D, 0xFD, 0x57, 0x06, 0xAB, 0xA4, 0xC4, 0x43,
 		0x84, 0xE5, 0x09, 0x33, 0xC8, 0x4B, 0x4F, 0x4F,
 	}
 
-	// gptTypeLinuxLVM — String: E6D6D379-F507-44C2-A23C-238F2A3DF928
+	// gptTypeLinuxLVM - String: E6D6D379-F507-44C2-A23C-238F2A3DF928
 	gptTypeLinuxLVM = [16]byte{
 		0x79, 0xD3, 0xD6, 0xE6, 0x07, 0xF5, 0xC2, 0x44,
 		0xA2, 0x3C, 0x23, 0x8F, 0x2A, 0x3D, 0xF9, 0x28,
 	}
 
-	// gptTypeEFI — String: C12A7328-F81F-11D2-BA4B-00A0C93EC93B
+	// gptTypeEFI - String: C12A7328-F81F-11D2-BA4B-00A0C93EC93B
 	gptTypeEFI = [16]byte{
 		0x28, 0x73, 0x2A, 0xC1, 0x1F, 0xF8, 0xD2, 0x11,
 		0xBA, 0x4B, 0x00, 0xA0, 0xC9, 0x3E, 0xC9, 0x3B,
 	}
 
-	// gptTypeMicrosoftData — String: EBD0A0A2-B9E5-4433-87C0-68B6B72699C7
+	// gptTypeMicrosoftData - String: EBD0A0A2-B9E5-4433-87C0-68B6B72699C7
 	gptTypeMicrosoftData = [16]byte{
 		0xA2, 0xA0, 0xD0, 0xEB, 0xE5, 0xB9, 0x33, 0x44,
 		0x87, 0xC0, 0x68, 0xB6, 0xB7, 0x26, 0x99, 0xC7,
 	}
 
-	// gptTypeBIOSBoot — String: 21686148-6449-6E6F-744E-656564454649
+	// gptTypeBIOSBoot - String: 21686148-6449-6E6F-744E-656564454649
 	gptTypeBIOSBoot = [16]byte{
 		0x48, 0x61, 0x68, 0x21, 0x49, 0x64, 0x6F, 0x6E,
 		0x74, 0x4E, 0x65, 0x65, 0x64, 0x45, 0x46, 0x49,
 	}
 
-	// gptTypeUnused is all zeros — an entry with this GUID is an empty slot.
+	// gptTypeUnused is all zeros - an entry with this GUID is an empty slot.
 	gptTypeUnused [16]byte
 )
 

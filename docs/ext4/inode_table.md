@@ -1,4 +1,4 @@
-# 3.4. Inode Table — The Linux Kernel  documentation
+# 3.4. Inode Table - The Linux Kernel  documentation
 
 [![Logo](https://docs.kernel.org/_static/logo.svg)](https://docs.kernel.org/index.md)
 

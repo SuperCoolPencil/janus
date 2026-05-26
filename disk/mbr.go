@@ -7,13 +7,13 @@ import (
 	"io"
 )
 
-// MBR — Master Boot Record
+// MBR - Master Boot Record
 //
 // The MBR occupies the first 512 bytes of the disk and has three parts:
 //
 //	Offset 0x000 (446 bytes): Bootstrap code (bootloader stage 1)
-//	Offset 0x1BE (64 bytes):  Partition table — exactly 4 entries × 16 bytes
-//	Offset 0x1FE (2 bytes):   Boot signature — must be 0x55 0xAA
+//	Offset 0x1BE (64 bytes):  Partition table - exactly 4 entries × 16 bytes
+//	Offset 0x1FE (2 bytes):   Boot signature - must be 0x55 0xAA
 //
 // MBR limitations:
 //   - At most 4 primary partitions. A workaround exists ("Extended" partitions,
@@ -48,11 +48,11 @@ type mbrEntry struct {
 	// 0x00: Status byte. 0x80 = active/bootable, 0x00 = inactive.
 	//       Any other value is technically invalid but we accept it.
 	Status uint8
-	// 0x01: CHS address of the first sector (3 bytes, obsolete — ignored).
+	// 0x01: CHS address of the first sector (3 bytes, obsolete - ignored).
 	CHSFirst [3]byte
 	// 0x04: Partition type code. See mbrType* constants below.
 	Type uint8
-	// 0x05: CHS address of the last sector (3 bytes, obsolete — ignored).
+	// 0x05: CHS address of the last sector (3 bytes, obsolete - ignored).
 	CHSLast [3]byte
 	// 0x08: LBA of the first sector of this partition.
 	StartLBA uint32
@@ -70,7 +70,7 @@ const (
 	mbrTypeLinuxSwap     = 0x82 // Linux swap
 	mbrTypeLinuxLVM      = 0x8E // Linux LVM physical volume
 	mbrTypeEFI           = 0xEF // EFI System Partition
-	mbrTypeGPTProtective = 0xEE // GPT Protective MBR entry — disk is actually GPT
+	mbrTypeGPTProtective = 0xEE // GPT Protective MBR entry - disk is actually GPT
 	mbrTypeExtended      = 0x05 // Extended partition (CHS addressing, not supported)
 	mbrTypeExtendedLBA   = 0x0F // Extended partition (LBA addressing, not supported)
 	mbrTypeFAT32LBA      = 0x0C // FAT32 with LBA addressing (often Windows)

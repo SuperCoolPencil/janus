@@ -1,4 +1,4 @@
-// Package disk — aligned I/O wrapper for Windows raw disk handles.
+// Package disk - aligned I/O wrapper for Windows raw disk handles.
 //
 // Windows requires that all reads from a raw physical disk handle
 // (\\.\PhysicalDriveN) satisfy two constraints:
@@ -24,7 +24,7 @@ import (
 
 // AlignedReaderAt wraps an io.ReaderAt so that every physical read is
 // aligned to sectorSize boundaries.  The caller sees the same logical
-// byte stream — alignment is handled internally.
+// byte stream - alignment is handled internally.
 type AlignedReaderAt struct {
 	inner      io.ReaderAt
 	sectorSize int64
@@ -105,7 +105,7 @@ func (a *AlignedReaderAt) ReadAt(buf []byte, off int64) (int, error) {
 		return copied, err
 	}
 
-	// Partial read with no error from inner — shouldn't normally happen
+	// Partial read with no error from inner - shouldn't normally happen
 	// with disk devices, but handle it gracefully.
 	return copied, io.EOF
 }

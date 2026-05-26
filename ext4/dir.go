@@ -8,7 +8,7 @@ import (
 // A directory in ext4 is a flat file that maps file names to inode numbers.
 // Its data blocks contain a packed sequence of variable-length directory
 // entries. There is no gap between entries and entries never span a block
-// boundary — the last entry in each block has a rec_len that reaches exactly
+// boundary - the last entry in each block has a rec_len that reaches exactly
 // to the end of that block.
 //
 // There are two on-disk entry formats:
@@ -31,12 +31,12 @@ import (
 //
 // The dx_root header uses a "fake" directory entry (rec_len spans the rest
 // of the block) so that old linear-scan code skips it cleanly. All
-// subsequent blocks are leaf blocks — plain DirEntry2 arrays identical to
+// subsequent blocks are leaf blocks - plain DirEntry2 arrays identical to
 // those in non-htree directories.
 //
 // Our read-only strategy: for an htree directory, extract only . and .. from
 // block 0, then parse all remaining blocks linearly. We never follow the
-// B-tree index — we don't need to for a correct, complete listing.
+// B-tree index - we don't need to for a correct, complete listing.
 //
 // See docs: https://github.com/SuperCoolPencil/janus/blob/master/docs/ext4/directory.md
 
@@ -45,11 +45,11 @@ import (
 //
 // On-disk layout (variable length, always a multiple of 4):
 //
-//	0x0  __le32  Inode       — inode number (0 = unused entry)
-//	0x4  __le16  RecLen      — byte length of this whole record
-//	0x6  __u8    NameLen     — byte length of the file name
-//	0x7  __u8    FileType    — file type code (see DirFileType* constants)
-//	0x8  char[]  Name        — file name (NOT null-terminated on disk)
+//	0x0  __le32  Inode       - inode number (0 = unused entry)
+//	0x4  __le16  RecLen      - byte length of this whole record
+//	0x6  __u8    NameLen     - byte length of the file name
+//	0x7  __u8    FileType    - file type code (see DirFileType* constants)
+//	0x8  char[]  Name        - file name (NOT null-terminated on disk)
 type DirEntry2 struct {
 	// Inode is the inode number this entry points to.
 	// A value of 0 means the entry is unused and should be skipped.
@@ -59,7 +59,7 @@ type DirEntry2 struct {
 	// The next entry starts at currentOffset + RecLen.
 	RecLen uint16
 	// NameLen is the byte length of Name. It does not include a null
-	// terminator — the name is not null-terminated on disk.
+	// terminator - the name is not null-terminated on disk.
 	NameLen uint8
 	// FileType is the type of the file this entry points to.
 	// See the DirFileType* constants below.
@@ -289,7 +289,7 @@ func parseDirBlockHtreeRoot(buf []byte) ([]DirEntry2, error) {
 // directory block. It uses rec_len as the stride so it handles both
 // active entries and the padded-to-end-of-block tail correctly.
 //
-// Entries with inode == 0 are skipped — they represent unused or deleted
+// Entries with inode == 0 are skipped - they represent unused or deleted
 // directory slots. The last valid entry in a block always has a rec_len
 // that takes it exactly to the end of the block.
 func parseDirBlock(buf []byte) ([]DirEntry2, error) {
@@ -319,7 +319,7 @@ func parseDirBlock(buf []byte) ([]DirEntry2, error) {
 			return nil, fmt.Errorf("directory entry at offset %d has rec_len=0 (corrupt block)", offset)
 		}
 
-		// Entries with inode == 0 are holes / deleted entries — skip them.
+		// Entries with inode == 0 are holes / deleted entries - skip them.
 		if inode != 0 && nameLen > 0 {
 			nameStart := offset + dirEntryHeaderSize
 			nameEnd := nameStart + int(nameLen)

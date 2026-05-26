@@ -11,7 +11,7 @@ func (fs *FileSystem) ReadSymlink(inode *Inode) (string, error) {
 	// producing complete nonsense.
 	if !inode.IsSymlink() {
 		return "", fmt.Errorf(
-			"ReadSymlink: inode has I_mode=0x%04x — expected S_IFLNK (0xA000)",
+			"ReadSymlink: inode has I_mode=0x%04x - expected S_IFLNK (0xA000)",
 			inode.I_mode,
 		)
 	}

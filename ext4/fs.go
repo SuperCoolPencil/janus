@@ -25,9 +25,9 @@ var ErrNotExist = errors.New("no such file or directory")
 //
 // Lifecycle:
 //  1. Call NewFileSystem(device) to create a zero-valued FileSystem.
-//  2. Call ReadSuperBlock() — this populates BlockSize, InodeSize,
+//  2. Call ReadSuperBlock() - this populates BlockSize, InodeSize,
 //     GroupCount, DescSize and caches the superblock internally.
-//  3. Call ReadGroupDescriptors() — this populates Bgds.
+//  3. Call ReadGroupDescriptors() - this populates Bgds.
 //  4. All other methods (ReadInode, ReadDir, Walk, …) are now usable.
 //
 // The FileSystem only ever reads from `dev`. It never writes.
@@ -89,7 +89,7 @@ type FileSystem struct {
 
 	// dirCache caches directory entry listings keyed by inode's I_block.
 	// This avoids re-reading the same directory blocks from disk on every
-	// Lookup or Getattr call — Explorer calls Getattr on every file in a
+	// Lookup or Getattr call - Explorer calls Getattr on every file in a
 	// directory, and each one triggers a full ReadDir without this cache.
 	dirCache sync.Map
 }
@@ -102,7 +102,7 @@ type FileSystem struct {
 //
 // `device` is typically one of:
 //   - *os.File opened on a raw ext4 image (testfs.img)
-//   - *disk.PartitionReader wrapping a physical disk file — it translates
+//   - *disk.PartitionReader wrapping a physical disk file - it translates
 //     every ReadAt offset so that offset 0 maps to the partition start byte
 //   - *bytes.Reader for unit tests
 func NewFileSystem(device io.ReaderAt) (*FileSystem, error) {
@@ -113,7 +113,7 @@ func NewFileSystem(device io.ReaderAt) (*FileSystem, error) {
 // Returns an error if ReadSuperBlock has not been called yet.
 func (fs *FileSystem) Superblock() (*SuperBlock, error) {
 	if fs.sb == nil {
-		return nil, fmt.Errorf("superblock not read yet — call ReadSuperBlock first")
+		return nil, fmt.Errorf("superblock not read yet - call ReadSuperBlock first")
 	}
 	return fs.sb, nil
 }

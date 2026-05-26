@@ -3,7 +3,7 @@
 //
 // The central problem it solves: Windows holds an exclusive lock on every
 // mounted *volume* (e.g. \\.\D:), but allows unrestricted ReadAt access to
-// the underlying *physical disk* (\\.\PhysicalDrive0) — even the boot disk,
+// the underlying *physical disk* (\\.\PhysicalDrive0) - even the boot disk,
 // even while Windows is running. By opening the physical disk and locating
 // the ext4 partition's byte offset ourselves, we sidestep the locking
 // entirely. This is the same strategy used by TestDisk, DiskGenius, and
@@ -64,7 +64,7 @@ type PartitionType int
 
 const (
 	TypeUnknown       PartitionType = iota
-	TypeLinuxData                   // ext2/3/4, xfs, btrfs — the type we care about
+	TypeLinuxData                   // ext2/3/4, xfs, btrfs - the type we care about
 	TypeLinuxSwap                   // swap space
 	TypeLinuxLVM                    // LVM physical volume
 	TypeEFISystem                   // EFI System Partition (ESP), usually FAT32
@@ -92,8 +92,8 @@ func (t PartitionType) String() string {
 }
 
 // DefaultSectorSize is the logical sector size assumed when the actual size
-// cannot be queried from the device. The vast majority of disks — including
-// "Advanced Format" drives operating in 512e (emulation) mode — present a
+// cannot be queried from the device. The vast majority of disks - including
+// "Advanced Format" drives operating in 512e (emulation) mode - present a
 // 512-byte logical sector size even if physical sectors are 4096 bytes.
 //
 // True 4Kn drives (rare, mostly enterprise) use 4096-byte sectors and
@@ -156,7 +156,7 @@ func (p *Partition) ByteSize() int64 {
 //
 // It wraps an underlying io.ReaderAt (the whole physical disk) and shifts
 // every read by the partition's byte offset so that offset 0 corresponds to
-// the first byte of the partition — exactly what ext4.NewFileSystem expects.
+// the first byte of the partition - exactly what ext4.NewFileSystem expects.
 //
 // Reads that would extend past the partition boundary are clamped and an
 // error is returned, preventing the ext4 parser from accidentally reading
@@ -227,12 +227,12 @@ func (pr *PartitionReader) ReadAt(buf []byte, off int64) (int, error) {
 // discovered partitions.
 //
 // Detection order:
-//  1. GPT — look for the "EFI PART" signature at byte offset 512 (LBA 1).
-//  2. MBR — fall back if GPT is absent; check for 0x55AA at offset 0x1FE.
-//  3. Error — if neither format is found.
+//  1. GPT - look for the "EFI PART" signature at byte offset 512 (LBA 1).
+//  2. MBR - fall back if GPT is absent; check for 0x55AA at offset 0x1FE.
+//  3. Error - if neither format is found.
 //
 // This function only calls ReadAt and never writes to the device. It works
-// on mounted disks and — on Windows, when running elevated — on the boot
+// on mounted disks and - on Windows, when running elevated - on the boot
 // disk via \\.\PhysicalDriveN handles.
 func ProbePartitions(disk io.ReaderAt) (PartitionScheme, []Partition, error) {
 	// Try GPT first; it is the only correct choice on modern UEFI systems.
