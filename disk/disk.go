@@ -169,9 +169,31 @@ type PartitionReader struct {
 
 // NewPartitionReader wraps disk so that reads are confined to the byte range
 // occupied by p.
+//
+// The underlying disk handle is wrapped in an AlignedReaderAt so that every
+// physical read is rounded to sector boundaries.  This is required on Windows
+// where raw-disk handles reject reads whose offset or length is not a multiple
+// of the sector size (ERROR_INVALID_PARAMETER).
 func NewPartitionReader(disk io.ReaderAt, p *Partition) *PartitionReader {
+	sectorSize := int64(p.SectorSize)
+	if sectorSize == 0 {
+		sectorSize = DefaultSectorSize
+	}
+
+	aligned, err := NewAlignedReaderAt(disk, sectorSize)
+	if err != nil {
+		// SectorSize should always be a valid power of two coming from the
+		// partition table parser, so this should never happen in practice.
+		// Fall back to the raw handle if it does.
+		return &PartitionReader{
+			disk:        disk,
+			startOffset: p.StartOffset(),
+			size:        p.ByteSize(),
+		}
+	}
+
 	return &PartitionReader{
-		disk:        disk,
+		disk:        aligned,
 		startOffset: p.StartOffset(),
 		size:        p.ByteSize(),
 	}
