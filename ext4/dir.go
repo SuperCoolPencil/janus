@@ -19,6 +19,25 @@ import (
 // 2-byte name_len field of the legacy format becomes a 1-byte name_len and
 // a 1-byte file_type in the modern format.
 //
+// # htree (hashed B-tree) directories
+//
+// When a directory grows large enough the kernel promotes it to an htree
+// index (EXT4_INDEX_FL, I_flags bit 0x1000). Block 0 of the directory file
+// then contains a dx_root structure:
+//
+//	[0..11]  . entry   (12 bytes, inode = self)
+//	[12..23] .. entry  (12 bytes, inode = parent)
+//	[24..]   dx_root info header + dx_entry[] index records
+//
+// The dx_root header uses a "fake" directory entry (rec_len spans the rest
+// of the block) so that old linear-scan code skips it cleanly. All
+// subsequent blocks are leaf blocks — plain DirEntry2 arrays identical to
+// those in non-htree directories.
+//
+// Our read-only strategy: for an htree directory, extract only . and .. from
+// block 0, then parse all remaining blocks linearly. We never follow the
+// B-tree index — we don't need to for a correct, complete listing.
+//
 // See docs: https://github.com/SuperCoolPencil/janus/blob/master/docs/ext4/directory.md
 
 // DirEntry2 is the in-memory representation of a single parsed directory
@@ -91,6 +110,11 @@ const dirEntryHeaderSize = 8
 //  3. Walk the packed DirEntry2 records inside each block using rec_len
 //     as the stride. Skip entries with inode == 0 (unused slots).
 //
+// For htree directories (EXT4_INDEX_FL set), block 0 is the dx_root block.
+// Only the leading . and .. entries are extracted from it; the rest of the
+// block holds the B-tree index and is skipped. All subsequent blocks are
+// normal leaf blocks and are parsed with parseDirBlock.
+//
 // The caller is responsible for ensuring that `inode` is a directory
 // (i.e. inode.I_mode & S_IFDIR != 0).
 func (fs *FileSystem) ReadDir(inode *Inode) ([]DirEntry2, error) {
@@ -104,6 +128,11 @@ func (fs *FileSystem) ReadDir(inode *Inode) ([]DirEntry2, error) {
 		)
 	}
 
+	// Detect htree index directories. When the EXT4_INDEX_FL flag is set,
+	// block 0 holds a dx_root header after the . and .. entries. We must not
+	// parse it as a normal directory block.
+	isHtree := inode.I_flags&EXT4_INDEX_FL != 0
+
 	// Resolve the extent tree rooted in the inode's I_block field.
 	// This gives us a flat list of (logical_block → physical_block, len)
 	// extents in logical order, covering the full file.
@@ -113,6 +142,10 @@ func (fs *FileSystem) ReadDir(inode *Inode) ([]DirEntry2, error) {
 	}
 
 	var entries []DirEntry2
+
+	// logicalBlock tracks the logical block index across all extents so we
+	// can identify block 0 (the dx_root block) in htree directories.
+	logicalBlock := uint64(0)
 
 	// Iterate over every extent (each extent describes a contiguous run of
 	// physical blocks). For a small root directory there will typically be
@@ -139,12 +172,20 @@ func (fs *FileSystem) ReadDir(inode *Inode) ([]DirEntry2, error) {
 				)
 			}
 
-			// Parse the block's directory entries.
-			blockEntries, err := parseDirBlock(buf)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse directory block %d: %w", physBlock, err)
+			var (blockEntries []DirEntry2; parseErr error)
+			if isHtree && logicalBlock == 0 {
+				// Block 0 of an htree directory: extract only . and ..
+				// The rest of the block is the dx_root index structure.
+				blockEntries, parseErr = parseDirBlockHtreeRoot(buf)
+			} else {
+				// Normal leaf block: parse all DirEntry2 records linearly.
+				blockEntries, parseErr = parseDirBlock(buf)
+			}
+			if parseErr != nil {
+				return nil, fmt.Errorf("failed to parse directory block %d: %w", physBlock, parseErr)
 			}
 			entries = append(entries, blockEntries...)
+			logicalBlock++
 		}
 	}
 
@@ -165,6 +206,64 @@ func (fs *FileSystem) Lookup(dirInode *Inode, name string) (uint32, error) {
 		}
 	}
 	return 0, ErrNotExist
+}
+
+// parseDirBlockHtreeRoot extracts only the . and .. entries from block 0 of
+// an htree (hashed B-tree) directory.
+//
+// Layout of block 0 in an htree directory:
+//
+//	[0..11]  . entry   (DirEntry2, inode = dir itself, rec_len = 12)
+//	[12..23] .. entry  (DirEntry2, inode = parent dir, rec_len = 12)
+//	[24..]   dx_root info header + dx_entry[] hash index records
+//             (disguised as a single DirEntry2 with inode=0 and
+//              rec_len spanning the rest of the block)
+//
+// We read exactly two entries from the start of the block and stop,
+// discarding the rest (the B-tree index data we don't need to follow).
+func parseDirBlockHtreeRoot(buf []byte) ([]DirEntry2, error) {
+	var entries []DirEntry2
+	offset := 0
+	blockSize := len(buf)
+
+	// The . and .. entries are always the first two entries. We read at most
+	// two entries and stop before we hit the dx_root index data at offset 24.
+	for range 2 {
+		if offset+dirEntryHeaderSize > blockSize {
+			break
+		}
+
+		inode := binary.LittleEndian.Uint32(buf[offset : offset+4])
+		recLen := binary.LittleEndian.Uint16(buf[offset+4 : offset+6])
+		nameLen := buf[offset+6]
+		fileType := buf[offset+7]
+
+		if recLen == 0 {
+			return nil, fmt.Errorf("htree root: entry at offset %d has rec_len=0 (corrupt block)", offset)
+		}
+
+		if inode != 0 && nameLen > 0 {
+			nameStart := offset + dirEntryHeaderSize
+			nameEnd := nameStart + int(nameLen)
+			if nameEnd > blockSize {
+				return nil, fmt.Errorf(
+					"htree root: entry at offset %d: name extends beyond block boundary (%d > %d)",
+					offset, nameEnd, blockSize,
+				)
+			}
+			entries = append(entries, DirEntry2{
+				Inode:    inode,
+				RecLen:   recLen,
+				NameLen:  nameLen,
+				FileType: fileType,
+				Name:     string(buf[nameStart:nameEnd]),
+			})
+		}
+
+		offset += int(recLen)
+	}
+
+	return entries, nil
 }
 
 // parseDirBlock walks the packed DirEntry2 records inside a single raw
