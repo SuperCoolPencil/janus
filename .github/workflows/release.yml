@@ -26,13 +26,14 @@ jobs:
         shell: powershell
         run: |
           Invoke-WebRequest -Uri "https://github.com/winfsp/winfsp/releases/download/v2.0/winfsp-2.0.23075.msi" -OutFile "winfsp.msi"
-          Start-Process -FilePath "msiexec.exe" -ArgumentList "/i winfsp.msi /qn /norestart" -Wait -NoNewWindow
+          Start-Process -FilePath "msiexec.exe" -ArgumentList "/i winfsp.msi /qn /norestart INSTALLLEVEL=1000" -Wait -NoNewWindow
+          Remove-Item -Force "winfsp.msi"
           
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v5
+        uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
-          version: latest
+          version: "~> v2"
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
