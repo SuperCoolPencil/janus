@@ -290,8 +290,25 @@ func (j *JanusFS) Link(oldpath string, newpath string) int {
 // Helper: inode → fuse.Stat_t
 
 // inodeToStat maps an ext4 Inode's fields to a fuse.Stat_t.
+//
+// Permission handling: ext4 stores Unix owner/group/other permission bits.
+// Directories like /home/meet are typically mode 0700 (owner-only). On
+// Windows these bits are meaningless, but WinFsp enforces them — blocking
+// access entirely for the current user if the "other" bits are empty.
+//
+// Since janus is a read-only mount, we force read access for all users on
+// every inode. For directories we also force execute (needed to enter and
+// list them). This ensures Explorer never shows "access denied" for any
+// file or directory on the mounted drive.
 func inodeToStat(inode *ext4.Inode, stat *fuse.Stat_t) {
-	stat.Mode = uint32(inode.I_mode)
+	mode := uint32(inode.I_mode)
+	// Grant read to owner/group/others (0444).
+	mode |= 0444
+	// Directories also need execute to be listable/enterable (0555).
+	if inode.IsDir() {
+		mode |= 0111
+	}
+	stat.Mode = mode
 	stat.Nlink = uint32(inode.I_links_count)
 	stat.Size = int64(inode.Size())
 	stat.Atim = fuse.NewTimespec(time.Unix(int64(inode.I_atime), 0))
