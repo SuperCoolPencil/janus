@@ -45,6 +45,10 @@ func run() error {
 			// On Linux: reads /sys/block/.
 			return runDevices()
 
+		case "install":
+			// Checks for Administrator privileges and installs WinFsp if missing.
+			return runInstall()
+
 		case "mount":
 			// Mount an ext4 partition as a drive letter via WinFsp / cgofuse.
 			// Usage: janus mount <letter> <diskNum> <partNum>
@@ -71,7 +75,7 @@ func run() error {
 	default:
 		return fmt.Errorf(
 			"usage:\n" +
-				"  janus                                  open testfs.img (dev mode)\n" +
+				"  janus install                          install WinFsp (requires Admin)\n" +
 				"  janus devices                          list physical disks\n" +
 				"  janus <device>                         list partitions on device\n" +
 				"  janus <device> <partNum>               read root dir of partition\n" +
