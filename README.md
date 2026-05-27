@@ -62,6 +62,6 @@ Keep the terminal window open. The drive will remain mounted until you press `Ct
 
 ## Limitations
 
-*   **Read-Only:** Write support is not implemented and is not planned.
+*   **Read-Only:** Write support is not currently implemented.
 *   **Case Sensitivity:** Ext4 is case-sensitive, while Windows is generally case-insensitive. Janus exposes the raw names. Applications that expect case-insensitivity might behave unpredictably if multiple files differ only by case.
 *   **Permissions:** Unix permissions are ignored. All files are presented as readable to ensure compatibility with Windows Explorer.
